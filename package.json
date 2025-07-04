@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "frames.js": "^0.0.35",
+    "frames.js": "github:ourzora/frames.js#main",  <-- CHANGE THIS LINE!
     "next": "^14.2.0",
     "react": "^18",
     "react-dom": "^18"
