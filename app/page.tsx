@@ -1,7 +1,6 @@
-import { fetchMetadata } from 'frames.js/next';
+import { fetchMetadata } from 'frames.js/dist/next';
 
 export async function generateMetadata() {
-  // This is where your Farcaster Frame's initial image and metadata are generated.
   return {
     title: "Fc-TAP Clicker",
     description: "A simple Farcaster Frames clicker game.",
@@ -19,8 +18,6 @@ export async function generateMetadata() {
 }
 
 export default function Page() {
-  // This is the HTML that a regular web browser would see if it opened your root URL.
-  // For Farcaster, the metadata generated above is what counts.
   return (
     <div style={{ padding: 20 }}>
       <h1>Fc-TAP Clicker Game</h1>
