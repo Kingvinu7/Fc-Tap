@@ -1,0 +1,11 @@
+{
+  "manifest": {
+    "name": "Farcaster Clicker Game",
+    "short_name": "Clicker",
+    "description": "A simple Farcaster clicker game.",
+    "start_url": "/api/frames",
+    "icon": "/icon.png",
+    "theme_color": "#ffffff",
+    "display": "standalone"
+  }
+}
