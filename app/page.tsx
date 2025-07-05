@@ -1,4 +1,4 @@
-import { fetchMetadata } from 'frames.js/next'; // <--- CHANGED THIS LINE!
+import { fetchMetadata } from 'frames.js/next';
 
 export async function generateMetadata() {
   // This is where your Farcaster Frame's initial image and metadata are generated.
