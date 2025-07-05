@@ -1,17 +1,19 @@
 import { frames } from '../../frames/route';
 import { ImageResponse } from '@vercel/og';
 
+// These two lines are crucial for React Server Components in Edge Runtime
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 const handler = frames(async (ctx) => {
   const count = ctx.state?.count ? Number(ctx.state.count) : 0;
-  
+
   const newCount = ctx.message?.buttonIndex === 1 ? count + 1 : 0;
 
   return {
     image: new ImageResponse(
-      // THIS IS THE SIMPLIFIED JSX. It uses a template literal directly as the div's content.
-      // This should definitively resolve the 'Unexpected token' error.
       (
-        <div>{`Hello Farcaster! Clicks: ${newCount}`}</div>
+        <div>{`Hello Farcaster! Clicks: ${newCount}`}</div> 
       ),
       {
         width: 1200,
@@ -32,7 +34,7 @@ const handler = frames(async (ctx) => {
       {
         label: `Link`,
         action: 'link',
-        target: 'https://framesjs.org',
+        target: '[https://framesjs.org](https://framesjs.org)',
       }
     ],
   };
