@@ -7,6 +7,7 @@ const handler = frames(async (ctx) => {
 
   return {
     image: (
+      // Corrected JSX syntax for the div's style attribute
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', backgroundColor: '#FFD700', fontSize: 60, color: 'navy' }}>
         <h1>Frames.js Clicker</h1>
         <p>Clicks: {newCount}</p>
