@@ -8,7 +8,7 @@ const handler = frames(async (ctx) => {
 
   return {
     image: new ImageResponse(
-      // FIX IS HERE: Using a template literal for the text content
+      // FIX IS HERE: Wrap the template literal in additional curly braces
       (
         <div>{`Hello Farcaster! Clicks: ${newCount}`}</div> 
       ),
