@@ -1,5 +1,5 @@
-import { createFrames } from 'frames.js/next';
+import { createFrames } from 'frames.js-react/next'; // <--- CHANGED THIS LINE!
 
 export const frames = createFrames({
-  basePath: "/api/frames", // This should match your API route path
+  basePath: "/api/frames",
 });
