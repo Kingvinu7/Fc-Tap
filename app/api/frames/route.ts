@@ -7,12 +7,11 @@ const handler = frames(async (ctx) => {
 
   return {
     image: (
-      // This entire div element, including its style, must be EXACT.
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', backgroundColor: '#FFD700', fontSize: 60, color: 'navy' }}>
-        <h1>Frames.js Clicker</h1>
-        <p>Clicks: {newCount}</p>
-      </div>
-    ),
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', backgroundColor: '#FFD700', fontSize: 60, color: 'navy' }}>
+          <h1>Frames.js Clicker</h1>
+          <p>Clicks: {newCount}</p>
+        </div>
+      ),
     buttons: [
       {
         label: `Click Me!`,
