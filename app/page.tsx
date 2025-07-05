@@ -1,4 +1,4 @@
-import { fetchMetadata } from '@framesjs/next'; // <--- THIS IS THE CORRECT IMPORT
+import { fetchMetadata } from 'frames.js/next/pages';
 
 export async function generateMetadata() {
   return {
