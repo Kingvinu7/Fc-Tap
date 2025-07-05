@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "frames.js": "^0.15.0",           
-    "@vercel/og": "^0.6.2",
     "next": "14.2.0",                 
     "react": "^18",
     "react-dom": "^18"
