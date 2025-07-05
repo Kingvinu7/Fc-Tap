@@ -1,4 +1,4 @@
-import { frames } from '../../frames/route';
+import { frames } from '../../frames'; // Corrected import path
 import { ImageResponse } from '@vercel/og';
 
 // These two lines are crucial for React Server Components in Edge Runtime
@@ -34,7 +34,7 @@ const handler = frames(async (ctx) => {
       {
         label: `Link`,
         action: 'link',
-        target: '[https://framesjs.org](https://framesjs.org)',
+        target: 'https://framesjs.org',
       }
     ],
   };
