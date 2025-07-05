@@ -1,5 +1,5 @@
 import { frames } from '../../frames/route';
-import { ImageResponse } from '@vercel/og'; // Make sure @vercel/og is in package.json
+import { ImageResponse } from '@vercel/og'; 
 
 const handler = frames(async (ctx) => {
   const count = ctx.state?.count ? Number(ctx.state.count) : 0;
@@ -8,9 +8,9 @@ const handler = frames(async (ctx) => {
 
   return {
     image: new ImageResponse(
-      // FIX IS HERE: Wrap the template literal in additional curly braces
+      // SIMPLIFIED JSX: just a div with plain text, NO STYLE ATTRIBUTE
       (
-        <div>{`Hello Farcaster! Clicks: ${newCount}`}</div> 
+        <div>{`Hello Farcaster! Clicks: ${newCount}`}</div>
       ),
       {
         width: 1200,
