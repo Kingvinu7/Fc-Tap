@@ -1,5 +1,7 @@
-import { frames } from '../../frames/route';
+import { frames } from '../../frames'; // Corrected import path
+import { ImageResponse } from '@vercel/og';
 
+// These two lines are crucial for React Server Components in Edge Runtime
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
@@ -9,23 +11,15 @@ const handler = frames(async (ctx) => {
   const newCount = ctx.message?.buttonIndex === 1 ? count + 1 : 0;
 
   return {
-    // Revert to native Frames.js image property (direct JSX)
-    // Removed ImageResponse wrapper and its import
-    image: (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        width: '100%', 
-        height: '100%', 
-        backgroundColor: '#FFD700', 
-        fontSize: 60, 
-        color: 'navy' 
-      }}>
-        <h1>Frames.js Clicker</h1>
-        <p>Clicks: {newCount}</p>
-      </div>
+    // FIX IS HERE: Using explicit string concatenation in JSX to avoid compiler issues.
+    image: new ImageResponse(
+      (
+        <div>{'Hello Farcaster! Clicks: '}{newCount}</div>
+      ),
+      {
+        width: 1200,
+        height: 630,
+      }
     ),
     buttons: [
       {
