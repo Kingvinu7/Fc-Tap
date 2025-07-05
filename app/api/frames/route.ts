@@ -1,16 +1,16 @@
 import { frames } from '../../frames/route';
-import { ImageResponse } from '@vercel/og';
+import { ImageResponse } from '@vercel/og'; // Make sure @vercel/og is in package.json
 
 const handler = frames(async (ctx) => {
   const count = ctx.state?.count ? Number(ctx.state.count) : 0;
-
+  
   const newCount = ctx.message?.buttonIndex === 1 ? count + 1 : 0;
 
   return {
     image: new ImageResponse(
-      // Simplest possible JSX image: just a div with plain text, NO STYLE ATTRIBUTE
+      // FIX IS HERE: Using a template literal for the text content
       (
-        <div>Hello Farcaster! Clicks: {newCount}</div>
+        <div>{`Hello Farcaster! Clicks: ${newCount}`}</div> 
       ),
       {
         width: 1200,
