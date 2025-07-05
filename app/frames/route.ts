@@ -1,4 +1,4 @@
-import { createFrames } from 'frames.js/next'; // <--- THIS SHOULD BE THE LINE
+import { createFrames } from '@framesjs/next'; // <--- THIS IS THE CORRECT IMPORT
 
 export const frames = createFrames({
   basePath: "/api/frames",
