@@ -1,5 +1,5 @@
-import { frames } from '../../frames/route';
-// import { ImageResponse } from '@vercel/og'; // This import is REMOVED/COMMENTED OUT
+import { frames } from '../../frames/route'; 
+import { ImageResponse } from '@vercel/og';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -10,23 +10,16 @@ const handler = frames(async (ctx) => {
   const newCount = ctx.message?.buttonIndex === 1 ? count + 1 : 0;
 
   return {
-    // Revert to native Frames.js image property (direct JSX)
-    // The ImageResponse wrapper is removed. frames.js handles JSX to image conversion.
-    image: (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        width: '100%', 
-        height: '100%', 
-        backgroundColor: '#FFD700', 
-        fontSize: 60, 
-        color: 'navy' 
-      }}>
-        <h1>Frames.js Clicker</h1>
-        <p>Clicks: {newCount}</p>
-      </div>
+    image: new ImageResponse(
+      // This uses explicit string and separate variable for content,
+      // which is the most robust way to avoid compilation errors for text in JSX.
+      (
+        <div>{'Hello Farcaster! Clicks: '}{newCount}</div> 
+      ),
+      {
+        width: 1200,
+        height: 630,
+      }
     ),
     buttons: [
       {
