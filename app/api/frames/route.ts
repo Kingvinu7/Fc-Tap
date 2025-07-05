@@ -8,8 +8,8 @@ const handler = frames(async (ctx) => {
 
   return {
     image: new ImageResponse(
-      // This is the simplified JSX: just a div with plain text, no style attribute.
-      // It uses a template literal for the text content to avoid syntax issues.
+      // THIS IS THE SIMPLIFIED JSX. It uses a template literal directly as the div's content.
+      // This should definitively resolve the 'Unexpected token' error.
       (
         <div>{`Hello Farcaster! Clicks: ${newCount}`}</div>
       ),
