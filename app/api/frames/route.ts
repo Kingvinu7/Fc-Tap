@@ -1,5 +1,5 @@
 import { frames } from '../../frames/route';
-import { ImageResponse } from '@vercel/og'; 
+import { ImageResponse } from '@vercel/og';
 
 const handler = frames(async (ctx) => {
   const count = ctx.state?.count ? Number(ctx.state.count) : 0;
@@ -8,7 +8,8 @@ const handler = frames(async (ctx) => {
 
   return {
     image: new ImageResponse(
-      // SIMPLIFIED JSX: just a div with plain text, NO STYLE ATTRIBUTE
+      // This is the simplified JSX: just a div with plain text, no style attribute.
+      // It uses a template literal for the text content to avoid syntax issues.
       (
         <div>{`Hello Farcaster! Clicks: ${newCount}`}</div>
       ),
