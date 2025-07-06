@@ -1,5 +1,7 @@
-import { frames } from '../../frames/index';
-import { button } from 'frames.js/core';
+// app/api/frames/route.tsx
+
+import { frames } from '../../frames/index'; // Corrected import path
+import { Button } from 'frames.js/core'; // Correct import for Button helper
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -10,7 +12,10 @@ const handler = frames(async (ctx) => {
   const newCount = ctx.message?.buttonIndex === 1 ? count + 1 : 0;
 
   return {
+    state: { count: newCount }, // CORRECT: State moved to top level
+
     image: (
+      // Corrected JSX for image
       <div style={{ 
         display: 'flex', 
         flexDirection: 'column', 
@@ -27,21 +32,22 @@ const handler = frames(async (ctx) => {
       </div>
     ),
     buttons: [
-      button({
+      Button({ // CORRECT: Using Button helper
         action: 'post',
         label: 'Click Me!',
+        target: '/api/frames', // CORRECT: Target URL for post action
       }),
-      button({
+      Button({ // CORRECT: Using Button helper
         action: 'post', 
         label: 'Reset',
+        target: '/api/frames', // CORRECT: Target URL for post action
       }),
-      button({
+      Button({ // CORRECT: Using Button helper
         action: 'link',
         target: 'https://framesjs.org',
         label: 'Link',
       }),
     ],
-    state: { count: newCount },
   };
 });
 
