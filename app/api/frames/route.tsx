@@ -1,94 +1,55 @@
-// app/api/frames/route.tsx
-
-import { createFrames, Button } from "frames.js/next"; // Import Button as a JSX component
+import { frames } from '../../frames/route'; 
+import { ImageResponse } from '@vercel/og';
+import { sdk } from '@farcaster/miniapp-sdk'; // NEW IMPORT!
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
-const frames = createFrames({
-  basePath: "/api/frames",
-  debug: process.env.NODE_ENV === 'development',
-});
-
 const handler = frames(async (ctx) => {
-  // FIX IS HERE: Ensure this initial GET request always returns a valid Frame definition
+  // --- Initial GET request logic ---
   if (!ctx.message) {
+    // Call ready() immediately for initial GET requests
+    await sdk.actions.ready(); // CRITICAL FIX
     return {
       image: (
-        <div 
-          style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            width: '100%', 
-            height: '100%', 
-            backgroundColor: '#FFD700', 
-            fontSize: '60px', 
-            color: 'navy',
-            fontFamily: 'Arial, sans-serif'
-          }}
-        >
-          <h1 style={{ margin: '0 0 20px 0' }}>🎮 FC Tap Game</h1>
-          <p style={{ margin: '0', fontSize: '48px', fontWeight: 'bold' }}>Clicks: 0</p>
-          <p style={{ margin: '10px 0 0 0', fontSize: '24px' }}>Start tapping!</p>
-        </div>
+        <div>{'Hello Farcaster! Clicks: '}{0}</div> 
       ),
       buttons: [
-        <Button action="post" target="/api/frames" key="click">🎯 Click Me!</Button>,
-        <Button action="post" target="/api/frames" key="reset">🔄 Reset</Button>,
-        <Button action="link" target="https://fc-taps.vercel.app" key="link">🏠 Home</Button>, // Use your actual base URL here
+        { label: `Click Me!`, action: 'post', target: '/api/frames', state: { count: 0 } },
+        { label: `Reset`, action: 'post', target: '/api/frames', state: { count: 0 } },
+        { label: `Link`, action: 'link', target: 'https://framesjs.org' }
       ],
-      // Ensure these metadata fields are present for the initial GET request
       title: "FC Tap Game",
       description: "A fun clicking game on Farcaster! See how many clicks you can get!",
       imageOptions: {
         aspectRatio: "1.91:1",
       },
-      // state is not supported on initial GET, so it's not here
     };
   }
 
-  // Handle runtime requests (actual user interactions via POST)
-  const count = ctx.state && typeof ctx.state === 'object' && 'count' in ctx.state ? Number(ctx.state.count) : 0;
-  
+  // --- Handle POST requests (user interactions) ---
+  const count = ctx.state?.count ? Number(ctx.state.count) : 0;
   let newCount = count;
-  
+
   if (ctx.message?.buttonIndex === 1) {
     newCount = count + 1;
   } else if (ctx.message?.buttonIndex === 2) {
     newCount = 0;
   }
 
+  // Call ready() for POST requests as well
+  await sdk.actions.ready(); // CRITICAL FIX
+
   return {
     image: (
-      <div 
-        style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          width: '100%', 
-          height: '100%', 
-          backgroundColor: '#FFD700', 
-          fontSize: '60px', 
-          color: 'navy',
-          fontFamily: 'Arial, sans-serif'
-        }}
-      >
-        <h1 style={{ margin: '0 0 20px 0' }}>🎮 FC Tap Game</h1>
-        <p style={{ margin: '0', fontSize: '48px', fontWeight: 'bold' }}>Clicks: {newCount}</p>
-        <p style={{ margin: '10px 0 0 0', fontSize: '24px' }}>
-          {newCount === 0 ? "Start tapping!" : `Great job! Keep going!`}
-        </p>
-      </div>
+      <div>{`Hello Farcaster! Clicks: ${newCount}`}</div>
     ),
     buttons: [
-      <Button action="post" target="/api/frames" key="click">🎯 Click Me!</Button>,
-      <Button action="post" target="/api/frames" key="reset">🔄 Reset</Button>,
-      <Button action="link" target="https://fc-taps.vercel.app" key="link">🏠 Home</Button>, // Use your actual base URL here
+      { label: `Click Me!`, action: 'post', target: '/api/frames', state: { count: newCount } },
+      { label: `Reset`, action: 'post', target: '/api/frames', state: { count: 0 } },
+      { label: `Link`, action: 'link', target: 'https://framesjs.org' }
     ],
-    state: { count: newCount }, // State is for POST requests
+    state: { count: newCount },
     title: "FC Tap Game",
     description: "A fun clicking game on Farcaster! See how many clicks you can get!",
     imageOptions: {
