@@ -1,22 +1,14 @@
-// app/api/frames/route.tsx
-
 import { frames } from '../../frames/index';
-// No ImageResponse import as it's not used natively by frames.js
-import { JsonObject } from '@framesjs/next/types'; // NEW IMPORT for JsonObject type
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 const handler = frames(async (ctx) => {
-  // FIX IS HERE: Cast ctx.state to JsonObject to safely access its properties
-  const state = ctx.state as JsonObject; 
-  const count = state?.count ? Number(state.count) : 0;
+  const count = ctx.state && typeof ctx.state === 'object' && 'count' in ctx.state ? Number(ctx.state.count) : 0;
   
   const newCount = ctx.message?.buttonIndex === 1 ? count + 1 : 0;
 
   return {
-    state: { count: newCount }, // State moved to top level
-
     image: (
       <div style={{ 
         display: 'flex', 
@@ -35,23 +27,20 @@ const handler = frames(async (ctx) => {
     ),
     buttons: [
       {
-        label: `Click Me!`,
         action: 'post',
-        target: '/api/frames', 
-        state: { count: newCount },
+        label: 'Click Me!',
       },
       {
-        label: `Reset`,
-        action: 'post',
-        target: '/api/frames',
-        state: { count: 0 },
+        action: 'post', 
+        label: 'Reset',
       },
       {
-        label: `Link`,
         action: 'link',
         target: 'https://framesjs.org',
-      }
+        label: 'Link',
+      },
     ],
+    state: { count: newCount },
   };
 });
 
