@@ -1,6 +1,6 @@
-import { frames } from '../../frames/route'; 
+import { frames } from '../../frames';
 import { ImageResponse } from '@vercel/og';
-import { sdk } from '@farcaster/miniapp-sdk'; // NEW IMPORT!
+import { sdk } from '@farcaster/frame-sdk';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -8,8 +8,8 @@ export const dynamic = 'force-dynamic';
 const handler = frames(async (ctx) => {
   // --- Initial GET request logic ---
   if (!ctx.message) {
-    // Call ready() immediately for initial GET requests
-    await sdk.actions.ready(); // CRITICAL FIX
+    // Call ready() when the interface is ready to be displayed
+    await sdk.actions.ready();
     return {
       image: (
         <div>{'Hello Farcaster! Clicks: '}{0}</div> 
@@ -37,8 +37,8 @@ const handler = frames(async (ctx) => {
     newCount = 0;
   }
 
-  // Call ready() for POST requests as well
-  await sdk.actions.ready(); // CRITICAL FIX
+  // Call ready() when the interface is ready to be displayed
+  await sdk.actions.ready();
 
   return {
     image: (
