@@ -1,5 +1,7 @@
-import { frames } from '../../frames/route';
-// import { ImageResponse } from '@vercel/og'; // THIS LINE MUST BE REMOVED OR COMMENTED OUT
+// app/api/frames/route.tsx
+
+import { frames } from '../../frames/index'; // FIX IS HERE: Changed from '../../frames/route' to '../../frames/index'
+// ImageResponse is NOT included here as it's not used by Frames.js's native method.
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -10,9 +12,8 @@ const handler = frames(async (ctx) => {
   const newCount = ctx.message?.buttonIndex === 1 ? count + 1 : 0;
 
   return {
-    // Revert to native Frames.js image property (direct JSX)
-    // Removed ImageResponse wrapper and its import.
-    // This JSX will be handled by Frames.js (which uses satori).
+    // This is using Frames.js's native image property (direct JSX).
+    // It does NOT use ImageResponse here.
     image: (
       <div style={{ 
         display: 'flex', 
