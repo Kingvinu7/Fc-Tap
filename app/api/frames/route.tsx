@@ -1,7 +1,7 @@
 // app/api/frames/route.tsx
 
-import { frames } from '../../frames/index'; // FIX IS HERE: Changed from '../../frames/route' to '../../frames/index'
-// ImageResponse is NOT included here as it's not used by Frames.js's native method.
+import { frames } from '../../frames/index'; // Corrected import path
+// No ImageResponse import as it's not used natively by frames.js
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -12,34 +12,20 @@ const handler = frames(async (ctx) => {
   const newCount = ctx.message?.buttonIndex === 1 ? count + 1 : 0;
 
   return {
-    // This is using Frames.js's native image property (direct JSX).
-    // It does NOT use ImageResponse here.
     image: (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        width: '100%', 
-        height: '100%', 
-        backgroundColor: '#FFD700', 
-        fontSize: 60, 
-        color: 'navy' 
-      }}>
-        <h1>Frames.js Clicker</h1>
-        <p>Clicks: {newCount}</p>
-      </div>
+      // Corrected and simplified JSX for image
+      <div>{'Hello Farcaster! Clicks: '}{newCount}</div> 
     ),
     buttons: [
       {
         label: `Click Me!`,
         action: 'post',
-        target: { state: { count: newCount } },
+        target: `/api/frames?count=${newCount}`, // FIX IS HERE: target is a string URL
       },
       {
         label: `Reset`,
         action: 'post',
-        target: { state: { count: 0 } },
+        target: `/api/frames?count=0`, // FIX IS HERE: target is a string URL
       },
       {
         label: `Link`,
