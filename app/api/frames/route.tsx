@@ -1,5 +1,5 @@
-import { frames } from '../../frames/index'; // Corrected import path to explicitly use index
-import { ImageResponse } from '@vercel/og';
+import { frames } from '../../frames/route';
+// import { ImageResponse } from '@vercel/og'; // THIS LINE MUST BE REMOVED OR COMMENTED OUT
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -10,14 +10,24 @@ const handler = frames(async (ctx) => {
   const newCount = ctx.message?.buttonIndex === 1 ? count + 1 : 0;
 
   return {
-    image: new ImageResponse(
-      (
-        <div>{'Hello Farcaster! Clicks: '}{newCount}</div> 
-      ),
-      {
-        width: 1200,
-        height: 630,
-      }
+    // Revert to native Frames.js image property (direct JSX)
+    // Removed ImageResponse wrapper and its import.
+    // This JSX will be handled by Frames.js (which uses satori).
+    image: (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        width: '100%', 
+        height: '100%', 
+        backgroundColor: '#FFD700', 
+        fontSize: 60, 
+        color: 'navy' 
+      }}>
+        <h1>Frames.js Clicker</h1>
+        <p>Clicks: {newCount}</p>
+      </div>
     ),
     buttons: [
       {
