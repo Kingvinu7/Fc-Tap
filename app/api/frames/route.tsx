@@ -1,4 +1,4 @@
-import { frames } from '../../frames/route'; 
+import { frames } from '../../frames/index'; // Corrected import path to explicitly use index
 import { ImageResponse } from '@vercel/og';
 
 export const runtime = 'edge';
@@ -11,8 +11,6 @@ const handler = frames(async (ctx) => {
 
   return {
     image: new ImageResponse(
-      // This uses explicit string and separate variable for content,
-      // which is the most robust way to avoid compilation errors for text in JSX.
       (
         <div>{'Hello Farcaster! Clicks: '}{newCount}</div> 
       ),
