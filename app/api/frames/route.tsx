@@ -28,7 +28,8 @@ const handler = frames(async (ctx) => {
   }
 
   // --- Handle POST requests (user interactions) ---
-  const count = ctx.state?.count ? Number(ctx.state.count) : 0;
+  const count = ctx.state && typeof ctx.state === 'object' && 'count' in ctx.state 
+    ? Number(ctx.state.count) : 0;
   let newCount = count;
 
   if (ctx.message?.buttonIndex === 1) {
