@@ -1,32 +1,13 @@
-import { frames } from 'frames.js/next';
+import { frames } from '../../frames/route'; 
 import { Button } from 'frames.js/next';
-import { sdk } from '@farcaster/frame-sdk';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
-
-// Helper function to safely call SDK ready with timeout
-const safeSDKReady = async (timeoutMs = 3000) => {
-  try {
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('SDK timeout')), timeoutMs)
-    );
-    
-    await Promise.race([sdk.actions.ready(), timeoutPromise]);
-    return true;
-  } catch (error) {
-    console.warn('SDK ready failed:', error.message);
-    return false;
-  }
-};
 
 const handler = frames(async (ctx) => {
   try {
     // --- Initial GET request logic ---
     if (!ctx.message) {
-      // Quick SDK ready call - don't wait too long
-      await safeSDKReady(2000);
-
       return {
         image: (
           <div style={{ 
@@ -69,9 +50,6 @@ const handler = frames(async (ctx) => {
     } else if (ctx.message?.buttonIndex === 2) {
       newCount = 0;
     }
-
-    // Quick SDK ready call for POST requests
-    await safeSDKReady(2000);
 
     return {
       image: (
