@@ -1,21 +1,23 @@
 // app/api/frames/route.tsx
 
-import { frames } from '../../frames/index'; // Corrected import path
-import { Button } from 'frames.js/core'; // Correct import for Button helper
+import { frames } from '../../frames/index';
+// No ImageResponse import as it's not used natively by frames.js
+import { JsonObject } from '@framesjs/next/types'; // NEW IMPORT for JsonObject type
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 const handler = frames(async (ctx) => {
-  const count = ctx.state?.count ? Number(ctx.state.count) : 0;
+  // FIX IS HERE: Cast ctx.state to JsonObject to safely access its properties
+  const state = ctx.state as JsonObject; 
+  const count = state?.count ? Number(state.count) : 0;
   
   const newCount = ctx.message?.buttonIndex === 1 ? count + 1 : 0;
 
   return {
-    state: { count: newCount }, // CORRECT: State moved to top level
+    state: { count: newCount }, // State moved to top level
 
     image: (
-      // Corrected JSX for image
       <div style={{ 
         display: 'flex', 
         flexDirection: 'column', 
@@ -32,21 +34,23 @@ const handler = frames(async (ctx) => {
       </div>
     ),
     buttons: [
-      Button({ // CORRECT: Using Button helper
+      {
+        label: `Click Me!`,
         action: 'post',
-        label: 'Click Me!',
-        target: '/api/frames', // CORRECT: Target URL for post action
-      }),
-      Button({ // CORRECT: Using Button helper
-        action: 'post', 
-        label: 'Reset',
-        target: '/api/frames', // CORRECT: Target URL for post action
-      }),
-      Button({ // CORRECT: Using Button helper
+        target: '/api/frames', 
+        state: { count: newCount },
+      },
+      {
+        label: `Reset`,
+        action: 'post',
+        target: '/api/frames',
+        state: { count: 0 },
+      },
+      {
+        label: `Link`,
         action: 'link',
         target: 'https://framesjs.org',
-        label: 'Link',
-      }),
+      }
     ],
   };
 });
