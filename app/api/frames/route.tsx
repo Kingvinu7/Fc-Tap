@@ -13,19 +13,37 @@ const handler = frames(async (ctx) => {
 
   return {
     image: (
-      // Corrected and simplified JSX for image
-      <div>{'Hello Farcaster! Clicks: '}{newCount}</div> 
+      // This uses explicit string and separate variable for content.
+      // This is the most robust way to avoid the 'Unexpected token' error.
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        width: '100%', 
+        height: '100%', 
+        backgroundColor: '#FFD700', 
+        fontSize: 60, 
+        color: 'navy' 
+      }}>
+        <h1>Frames.js Clicker</h1>
+        <p>Clicks: {newCount}</p>
+      </div>
     ),
     buttons: [
       {
         label: `Click Me!`,
         action: 'post',
-        target: `/api/frames?count=${newCount}`, // FIX IS HERE: target is a string URL
+        // FIX IS HERE: For action 'post', target should just be the base URL
+        // Frames.js handles state propagation automatically when action is 'post'.
+        target: '/api/frames', 
       },
       {
         label: `Reset`,
         action: 'post',
-        target: `/api/frames?count=0`, // FIX IS HERE: target is a string URL
+        // FIX IS HERE: For action 'post', target should just be the base URL
+        // State will be handled by setting it to 0 initially in frames() handler.
+        target: '/api/frames', 
       },
       {
         label: `Link`,
