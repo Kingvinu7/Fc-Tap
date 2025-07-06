@@ -2,6 +2,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://fc-taps-g09gq8b29-optimistics-projects-6725ac43.vercel.app'), // ← use your actual deployed domain
   title: 'FC Tap Game',
   description: 'A fun clicking game on Farcaster',
   openGraph: {
@@ -21,10 +22,10 @@ export const metadata: Metadata = {
     'fc:frame:image': '/icon.png',
     'fc:frame:button:1': 'Click Me!',
     'fc:frame:button:1:action': 'post',
-    'fc:frame:button:1:target': '/api/frames',
+    'fc:frame:button:1:target': 'https://fc-taps-g09gq8b29-optimistics-projects-6725ac43.vercel.app/api/frames',
     'fc:frame:button:2': 'Reset',
     'fc:frame:button:2:action': 'post',
-    'fc:frame:button:2:target': '/api/frames',
+    'fc:frame:button:2:target': 'https://fc-taps-g09gq8b29-optimistics-projects-6725ac43.vercel.app/api/frames',
     'fc:frame:button:3': 'Link',
     'fc:frame:button:3:action': 'link',
     'fc:frame:button:3:target': 'https://framesjs.org',
