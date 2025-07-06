@@ -14,7 +14,7 @@
         "next": "14.2.0",                 
         "react": "^18",
         "react-dom": "^18",
-        "@farcaster/miniapp-sdk": "^0.0.61"  // NEW DEPENDENCY!
+        "@farcaster/miniapp-sdk": "^0.0.61"
       },
       "devDependencies": {
         "@types/node": "^20",
