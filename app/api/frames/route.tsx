@@ -1,5 +1,6 @@
 // app/api/frames/route.tsx
-import { createFrames, Button } from "frames.js/next";
+
+import { createFrames, Button } from "frames.js/next"; // Import Button as a JSX component
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -10,7 +11,7 @@ const frames = createFrames({
 });
 
 const handler = frames(async (ctx) => {
-  // Handle build-time requests (when ctx.message is undefined)
+  // FIX IS HERE: Ensure this initial GET request always returns a valid Frame definition
   if (!ctx.message) {
     return {
       image: (
@@ -34,19 +35,21 @@ const handler = frames(async (ctx) => {
         </div>
       ),
       buttons: [
-        <Button action="post" key="click">🎯 Click Me!</Button>,
-        <Button action="post" key="reset">🔄 Reset</Button>,
-        <Button action="link" target="https://fc-taps.vercel.app" key="link">🏠 Home</Button>,
+        <Button action="post" target="/api/frames" key="click">🎯 Click Me!</Button>,
+        <Button action="post" target="/api/frames" key="reset">🔄 Reset</Button>,
+        <Button action="link" target="https://fc-taps.vercel.app" key="link">🏠 Home</Button>, // Use your actual base URL here
       ],
+      // Ensure these metadata fields are present for the initial GET request
       title: "FC Tap Game",
       description: "A fun clicking game on Farcaster! See how many clicks you can get!",
       imageOptions: {
         aspectRatio: "1.91:1",
       },
+      // state is not supported on initial GET, so it's not here
     };
   }
 
-  // Handle runtime requests (actual user interactions)
+  // Handle runtime requests (actual user interactions via POST)
   const count = ctx.state && typeof ctx.state === 'object' && 'count' in ctx.state ? Number(ctx.state.count) : 0;
   
   let newCount = count;
@@ -81,11 +84,11 @@ const handler = frames(async (ctx) => {
       </div>
     ),
     buttons: [
-      <Button action="post" key="click">🎯 Click Me!</Button>,
-      <Button action="post" key="reset">🔄 Reset</Button>,
-      <Button action="link" target="https://fc-taps.vercel.app" key="link">🏠 Home</Button>,
+      <Button action="post" target="/api/frames" key="click">🎯 Click Me!</Button>,
+      <Button action="post" target="/api/frames" key="reset">🔄 Reset</Button>,
+      <Button action="link" target="https://fc-taps.vercel.app" key="link">🏠 Home</Button>, // Use your actual base URL here
     ],
-    state: { count: newCount },
+    state: { count: newCount }, // State is for POST requests
     title: "FC Tap Game",
     description: "A fun clicking game on Farcaster! See how many clicks you can get!",
     imageOptions: {
