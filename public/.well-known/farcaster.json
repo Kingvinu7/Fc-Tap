@@ -1,9 +1,10 @@
 {
-  "name": "Farcaster Clicker Game",
-  "description": "A simple Farcaster clicker game.",
-  "icon": "https://fc-taps.vercel.app/icon.png",
-  "homeUrl": "https://fc-taps.vercel.app",
-  "imageUrl": "https://fc-taps.vercel.app/api/frames",
-  "version": "1.0.0",
-  "splashImageUrl": "https://fc-taps.vercel.app/icon.png"
+  "frame": {
+    "version": "1",
+    "name": "Farcaster Clicker Game",
+    "iconUrl": "https://fc-taps.vercel.app/icon.png",
+    "homeUrl": "https://fc-taps.vercel.app",
+    "splashImageUrl": "https://fc-taps.vercel.app/icon.png",
+    "splashBackgroundColor": "#ffffff"
+  }
 }
