@@ -1,7 +1,4 @@
-// app/api/frames/route.tsx
-
-import { frames } from '../../frames/index'; // Corrected import path
-// No ImageResponse import as it's not used natively by frames.js
+import { frames } from '../../frames/index';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -13,8 +10,6 @@ const handler = frames(async (ctx) => {
 
   return {
     image: (
-      // This uses explicit string and separate variable for content.
-      // This is the most robust way to avoid the 'Unexpected token' error.
       <div style={{ 
         display: 'flex', 
         flexDirection: 'column', 
@@ -34,16 +29,10 @@ const handler = frames(async (ctx) => {
       {
         label: `Click Me!`,
         action: 'post',
-        // FIX IS HERE: For action 'post', target should just be the base URL
-        // Frames.js handles state propagation automatically when action is 'post'.
-        target: '/api/frames', 
       },
       {
         label: `Reset`,
         action: 'post',
-        // FIX IS HERE: For action 'post', target should just be the base URL
-        // State will be handled by setting it to 0 initially in frames() handler.
-        target: '/api/frames', 
       },
       {
         label: `Link`,
@@ -51,6 +40,7 @@ const handler = frames(async (ctx) => {
         target: 'https://framesjs.org',
       }
     ],
+    state: { count: newCount }, // Move state to the top level
   };
 });
 
