@@ -1,10 +1,18 @@
 {
+  "accountAssociation": {
+    "header": "eyJmaWQiOjI1MDg2OSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDQwZUY3Qzc1YjRlRDBkQjY3N0MzN2VjODkxODM0QjI1MDk1ODI1ZDYifQ",
+    "payload": "eyJkb21haW4iOiJmYy10YXBzLnZlcmNlbC5hcHAifQ",
+    "signature": "MHgyZDM3NDdhNTg0MzA2MGJiYWIzYjUyYmY5NjA0ZTNlYzEwNzg0MzU4M2M2NWNmNzFiM2NmZWQ2MjU3NDA1NTBjNGRkNDMwYzM5YmI1NTM4MDA2MmE5ZDdkMDg5ODQzMjYwZjViNWZiZGM2ZTZkZWU5YWVkNGQ3NzcwYjU5MGU4NTFj"
+  },
   "frame": {
     "version": "1",
-    "name": "Farcaster Clicker Game",
+    "name": "Example Frame",
     "iconUrl": "https://fc-taps.vercel.app/icon.png",
     "homeUrl": "https://fc-taps.vercel.app",
-    "splashImageUrl": "https://fc-taps.vercel.app/icon.png",
-    "splashBackgroundColor": "#ffffff"
+    "imageUrl": "https://fc-taps.vercel.app/image.png",
+    "buttonTitle": "Check this out",
+    "splashImageUrl": "https://fc-taps.vercel.app/splash.png",
+    "splashBackgroundColor": "#eeccff",
+    "webhookUrl": "https://fc-taps.vercel.app/api/webhook"
   }
 }
