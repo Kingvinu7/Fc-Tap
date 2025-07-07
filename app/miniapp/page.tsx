@@ -6,7 +6,7 @@ export default function MiniApp() {
   useEffect(() => {
     import('frames.js')
       .then((sdk) => {
-        sdk?.actions?.ready?.();
+        sdk.actions?.ready?.();
         console.log('MiniApp SDK ready');
       })
       .catch((err) => {
