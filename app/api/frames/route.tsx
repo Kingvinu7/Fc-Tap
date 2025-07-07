@@ -1,6 +1,6 @@
-// app/api/frames/route.ts
+// app/api/frames/route.tsx
 import { NextRequest } from "next/server";
-import { getFrameHtmlResponse } from "frames.js";
+import { getFrameHtmlResponse } from "@farcaster/frames";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
