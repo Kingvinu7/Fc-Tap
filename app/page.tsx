@@ -1,18 +1,16 @@
-import { fetchMetadata } from 'frames.js/next'; // Corrected import path
+import { fetchMetadata } from "frames.js";
 
 export async function generateMetadata() {
+  const baseUrl =
+    process.env.NODE_ENV === "production"
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
+
   return {
     title: "Fc-TAP Clicker",
     description: "A simple Farcaster Frames clicker game.",
     other: {
-      ...(await fetchMetadata(
-        new URL(
-          "/api/frames",
-          process.env.VERCEL_URL
-            ? `https://${process.env.VERCEL_URL}`
-            : "http://localhost:3000"
-        )
-      )),
+      ...(await fetchMetadata(new URL("/api/frames", baseUrl))),
     },
   };
 }
