@@ -4,9 +4,8 @@ import { useEffect } from 'react';
 
 export default function MiniApp() {
   useEffect(() => {
-    import('@farcaster/frames').then((sdk) => {
-      sdk.actions.ready();
-    });
+    // Placeholder: if you want to trigger something like ready(), import from valid SDK
+    console.log('MiniApp loaded');
   }, []);
 
   return (
