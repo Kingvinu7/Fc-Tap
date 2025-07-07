@@ -23,5 +23,12 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.0",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "overrides": {
+    "cheerio": "1.0.0-rc.12",
+    "undici": "5.28.4"
   }
 }
