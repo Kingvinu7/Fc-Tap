@@ -1,6 +1,6 @@
 import { frames } from '../../frames/route'; 
 import { Button } from 'frames.js/next';
-import { sdk } from '@farcaster/frame-sdk'; // UPDATED IMPORT!
+import { sdk } from '@farcaster/frame-sdk';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -8,9 +8,7 @@ export const dynamic = 'force-dynamic';
 const handler = frames(async (ctx) => {
   // --- Initial GET request logic ---
   if (!ctx.message) {
-    // Call ready() for initial GET requests
-    await sdk.actions.ready();
-    
+    await sdk.actions.ready(); // CRITICAL FIX: Call ready() for initial GET
     return {
       image: (
         <div style={{ 
@@ -54,8 +52,7 @@ const handler = frames(async (ctx) => {
     newCount = 0;
   }
 
-  // Call ready() for POST requests as well
-  await sdk.actions.ready();
+  await sdk.actions.ready(); // CRITICAL FIX: Call ready() for POST requests as well
 
   return {
     image: (
@@ -74,7 +71,7 @@ const handler = frames(async (ctx) => {
         <h1 style={{ margin: '0 0 20px 0' }}>🎮 FC Tap Game</h1>
         <p style={{ margin: '0', fontSize: '48px', fontWeight: 'bold' }}>Clicks: {newCount}</p>
         <p style={{ margin: '10px 0 0 0', fontSize: '24px' }}>
-          {newCount === 0 ? "Start tapping!" : `Great job! Keep going!`}
+          {newCount === 0 ? "Start tapping!" : Great job! Keep going!}
         </p>
       </div>
     ),
