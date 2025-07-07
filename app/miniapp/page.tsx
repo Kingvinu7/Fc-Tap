@@ -1,28 +1,18 @@
-'use client';
+// app/miniapp/page.tsx
+'use client'
 
-import { useEffect } from 'react';
-import { createFrames } from 'frames.js';
+import { useEffect } from 'react'
+import { actions } from 'frames.js'
 
 export default function MiniApp() {
   useEffect(() => {
-    const { actions } = createFrames();
-    actions.ready(); // Must be called once you're ready
-    console.log('Mini App is ready');
-  }, []);
+    actions.ready()
+    console.log('Mini App is ready')
+  }, [])
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      backgroundColor: '#FFD700',
-      color: 'navy',
-      fontFamily: 'Arial, sans-serif',
-    }}>
+    <div style={{ background: 'yellow', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <h1>🎮 FC Tap Game</h1>
-      <p>Tap to play. Let's go!</p>
     </div>
-  );
+  )
 }
