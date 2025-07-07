@@ -1,17 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
+import { createFrames } from 'frames.js';
 
 export default function MiniApp() {
   useEffect(() => {
-    import('frames.js')
-      .then((sdk) => {
-        sdk.actions?.ready?.(); // This works with v0.19.0
-        console.log('MiniApp SDK ready');
-      })
-      .catch((err) => {
-        console.warn('frames.js not available', err);
-      });
+    const { actions } = createFrames();
+    actions.ready(); // Must be called once you're ready
+    console.log('Mini App is ready');
   }, []);
 
   return (
