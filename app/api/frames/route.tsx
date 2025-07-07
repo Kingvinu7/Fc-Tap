@@ -1,6 +1,6 @@
 import { frames } from '../../frames/route'; 
 import { Button } from 'frames.js/next';
-import { sdk } from '@farcaster/miniapp-sdk'; // NEW IMPORT!
+import { sdk } from '@farcaster/frame-sdk'; // UPDATED IMPORT!
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -8,7 +8,9 @@ export const dynamic = 'force-dynamic';
 const handler = frames(async (ctx) => {
   // --- Initial GET request logic ---
   if (!ctx.message) {
-    await sdk.actions.ready(); // CRITICAL FIX: Call ready() for initial GET
+    // Call ready() for initial GET requests
+    await sdk.actions.ready();
+    
     return {
       image: (
         <div style={{ 
@@ -31,7 +33,7 @@ const handler = frames(async (ctx) => {
       buttons: [
         <Button action="post" target="/api/frames" key="click">🎯 Click Me!</Button>,
         <Button action="post" target="/api/frames" key="reset">🔄 Reset</Button>,
-        <Button action="link" target="https://fc-taps.vercel.app" key="link">🏠 Home</Button>, // Use your actual base URL here
+        <Button action="link" target="https://fc-taps.vercel.app" key="link">🏠 Home</Button>,
       ],
       title: "FC Tap Game",
       description: "A fun clicking game on Farcaster! See how many clicks you can get!",
@@ -52,7 +54,8 @@ const handler = frames(async (ctx) => {
     newCount = 0;
   }
 
-  await sdk.actions.ready(); // CRITICAL FIX: Call ready() for POST requests as well
+  // Call ready() for POST requests as well
+  await sdk.actions.ready();
 
   return {
     image: (
