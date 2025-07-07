@@ -8,7 +8,7 @@ const frames = createFrames()
 export default function MiniApp() {
   const [isReady, setIsReady] = useState(false)
   const [tapCount, setTapCount] = useState(0)
-  const [lastTapValue, setLastTapValue] = useState(0)
+  const [animate, setAnimate] = useState(false)
 
   useEffect(() => {
     frames.ready().then(() => {
@@ -17,23 +17,25 @@ export default function MiniApp() {
   }, [])
 
   const handleTap = () => {
-    const nextTap = tapCount + 1
-    setTapCount(nextTap)
-    setLastTapValue(nextTap)
+    setAnimate(true)
+    setTapCount(prev => prev + 1)
   }
 
   const handleReset = () => {
     setTapCount(0)
-    setLastTapValue(0)
   }
+
+  // Remove animation class after it plays
+  useEffect(() => {
+    if (animate) {
+      const timer = setTimeout(() => setAnimate(false), 300)
+      return () => clearTimeout(timer)
+    }
+  }, [animate])
 
   if (!isReady) {
     return (
-      <div style={{ 
-        padding: 20, 
-        textAlign: 'center',
-        fontFamily: 'Arial, sans-serif'
-      }}>
+      <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
         <h1>🎮 Loading FC-TAP Game...</h1>
         <p>Please wait while we initialize your mini app.</p>
       </div>
@@ -41,27 +43,17 @@ export default function MiniApp() {
   }
 
   return (
-    <div style={{ 
-      padding: 20, 
-      textAlign: 'center',
-      fontFamily: 'Arial, sans-serif',
-      backgroundColor: '#f0f0f0',
-      minHeight: '100vh'
-    }}>
+    <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#f0f0f0', minHeight: '100vh' }}>
       <h1 style={{ color: '#333', marginBottom: '30px' }}>🎮 FC-TAP Clicker Mini App</h1>
-      
-      <div style={{
-        backgroundColor: '#FFD700',
-        padding: '40px',
-        borderRadius: '15px',
-        margin: '20px 0',
-        boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-      }}>
-        <h2 style={{ fontSize: '40px', color: 'green', marginBottom: '10px' }}>
-          +{lastTapValue}
+
+      <div style={{ backgroundColor: '#FFD700', padding: '40px', borderRadius: '15px', margin: '20px 0', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+        <h2 
+          className={animate ? 'pop' : ''} 
+          style={{ color: 'navy', fontSize: '48px', margin: '0 0 20px 0' }}
+        >
+          Taps: {tapCount}
         </h2>
-        <p style={{ fontSize: '24px' }}>Total Taps: {tapCount}</p>
-        
+
         <button 
           onClick={handleTap}
           style={{
@@ -78,7 +70,7 @@ export default function MiniApp() {
         >
           🎯 TAP ME!
         </button>
-        
+
         <button 
           onClick={handleReset}
           style={{
@@ -95,18 +87,30 @@ export default function MiniApp() {
           🔄 Reset
         </button>
       </div>
-      
+
       <p style={{ color: '#666', fontSize: '16px' }}>
         {tapCount === 0 ? "Start tapping to see your score!" : 
          tapCount < 10 ? "Keep going! You're doing great!" :
          tapCount < 50 ? "Wow! You're on fire! 🔥" :
          "Amazing! You're a tapping champion! 🏆"}
       </p>
-      
+
       <div style={{ marginTop: '30px', fontSize: '14px', color: '#888' }}>
         <p>🎉 Your Farcaster Mini App is running successfully!</p>
         <p>Try the frame version at <a href="/api/frames" style={{ color: '#4CAF50' }}>/api/frames</a></p>
       </div>
+
+      <style jsx>{`
+        .pop {
+          animation: pop 0.3s ease-in-out;
+        }
+
+        @keyframes pop {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.3); }
+          100% { transform: scale(1); }
+        }
+      `}</style>
     </div>
   )
 }
