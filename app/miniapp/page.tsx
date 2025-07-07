@@ -1,17 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
+import { createFrames } from 'frames.js'; // <-- Correct import for v0.19.0
 
 export default function MiniApp() {
   useEffect(() => {
-    import('frames.js')
-      .then((sdk) => {
-        sdk.actions?.ready?.();
-        console.log('MiniApp SDK ready');
-      })
-      .catch((err) => {
-        console.warn('frames.js not available', err);
-      });
+    const frames = createFrames();  // <-- Initialize SDK
+    frames.ready();                 // <-- Notify Farcaster client
+    console.log('MiniApp SDK ready');
   }, []);
 
   return (
