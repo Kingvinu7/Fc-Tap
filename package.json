@@ -14,8 +14,9 @@
     "next": "14.2.0",                 
     "react": "^18",
     "react-dom": "^18",
+    "@farcaster/frames": "0.1.1"
     "@farcaster/frame-sdk": "^0.1.0"
-    "@farcaster/frames": "^0.1.1"
+    
   },
   "devDependencies": {
     "@types/node": "^20",
