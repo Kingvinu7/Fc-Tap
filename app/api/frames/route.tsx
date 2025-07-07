@@ -1,88 +1,59 @@
-import { createFrames, Button } from 'frames.js/next';
+// app/api/frames/route.ts
+import { NextRequest } from "next/server";
+import { getFrameHtmlResponse } from "frames.js";
 
-const frames = createFrames();
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const clicks = parseInt(searchParams.get("clicks") || "0");
 
-const handler = frames(async (ctx) => {
-  if (!ctx.message) {
-    return {
-      image: (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '100%',
-          height: '100%',
-          backgroundColor: '#FFD700',
-          fontSize: '60px',
-          color: 'navy',
-          fontFamily: 'Arial, sans-serif'
-        }}>
-          <h1 style={{ margin: '0 0 20px 0' }}>🎮 FC Tap Game</h1>
-          <p style={{ margin: '0', fontSize: '48px', fontWeight: 'bold' }}>Clicks: 0</p>
-          <p style={{ margin: '10px 0 0 0', fontSize: '24px' }}>Start tapping!</p>
-        </div>
-      ),
+  return new Response(
+    getFrameHtmlResponse({
       buttons: [
-        <Button action="post" target="/api/frames" key="click">🎯 Click Me!</Button>,
-        <Button action="post" target="/api/frames" key="reset">🔄 Reset</Button>,
-        <Button action="link" target="https://fc-taps.vercel.app" key="link">🏠 Home</Button>,
+        { label: "🎯 Click Me!" },
+        { label: "🔄 Reset" },
+        { label: "🏠 Home" },
       ],
-      title: "FC Tap Game",
-      description: "A fun clicking game on Farcaster! See how many clicks you can get!",
-      imageOptions: {
-        aspectRatio: "1.91:1",
+      image: {
+        src: `https://fc-taps.vercel.app/image?clicks=${clicks}`,
       },
-    };
-  }
+      postUrl: "https://fc-taps.vercel.app/api/frames",
+    }),
+    {
+      headers: {
+        "Content-Type": "text/html",
+      },
+    }
+  );
+}
 
-  const count = ctx.state && typeof ctx.state === 'object' && 'count' in ctx.state ? Number(ctx.state.count) : 0;
+export async function POST(req: NextRequest) {
+  const formData = await req.formData();
+  const buttonIndex = formData.get("buttonIndex");
 
-  let newCount = count;
+  let clicks = parseInt(formData.get("clicks")?.toString() || "0");
 
-  if (ctx.message?.buttonIndex === 1) {
-    newCount = count + 1;
-  } else if (ctx.message?.buttonIndex === 2) {
-    newCount = 0;
-  }
+  if (buttonIndex === "0") clicks++;
+  if (buttonIndex === "1") clicks = 0;
 
-  return {
-    image: (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        height: '100%',
-        backgroundColor: '#FFD700',
-        fontSize: '60px',
-        color: 'navy',
-        fontFamily: 'Arial, sans-serif'
-      }}>
-        <h1 style={{ margin: '0 0 20px 0' }}>🎮 FC Tap Game</h1>
-        <p style={{ margin: '0', fontSize: '48px', fontWeight: 'bold' }}>Clicks: {newCount}</p>
-        <p style={{ margin: '10px 0 0 0', fontSize: '24px' }}>
-          {newCount === 0 ? "Start tapping!" : "Great job! Keep going!"}
-        </p>
-      </div>
-    ),
-    buttons: [
-      <Button action="post" target="/api/frames" key="click">🎯 Click Me!</Button>,
-      <Button action="post" key="reset">🔄 Reset</Button>,
-      <Button action="link" target="https://fc-taps.vercel.app" key="link">🏠 Home</Button>,
-    ],
-    state: { count: newCount },
-    title: "FC Tap Game",
-    description: "A fun clicking game on Farcaster! See how many clicks you can get!",
-    imageOptions: {
-      aspectRatio: "1.91:1",
-    },
-  };
-});
-
-export const GET = handler;
-export const POST = handler;
+  return new Response(
+    getFrameHtmlResponse({
+      buttons: [
+        { label: "🎯 Click Me!" },
+        { label: "🔄 Reset" },
+        { label: "🏠 Home" },
+      ],
+      image: {
+        src: `https://fc-taps.vercel.app/image?clicks=${clicks}`,
+      },
+      postUrl: "https://fc-taps.vercel.app/api/frames",
+    }),
+    {
+      headers: {
+        "Content-Type": "text/html",
+      },
+    }
+  );
+}
