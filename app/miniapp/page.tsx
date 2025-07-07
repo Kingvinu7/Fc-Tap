@@ -1,13 +1,11 @@
 'use client'
 
 import { useEffect } from 'react'
-import { createFrames } from 'frames.js/next'
-
-const frames = createFrames()
 
 export default function MiniApp() {
   useEffect(() => {
-    frames.ready()
+    // Mini app is ready
+    console.log('Mini app ready')
   }, [])
 
   return (
