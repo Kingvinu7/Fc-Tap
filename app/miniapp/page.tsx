@@ -1,9 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createFrames } from 'frames.js/next'
-
-const frames = createFrames()
 
 export default function MiniApp() {
   const [isReady, setIsReady] = useState(false)
@@ -11,9 +8,9 @@ export default function MiniApp() {
   const [animate, setAnimate] = useState(false)
 
   useEffect(() => {
-    frames.ready().then(() => {
-      setIsReady(true)
-    })
+    // Simulate a short loading delay
+    const timeout = setTimeout(() => setIsReady(true), 500)
+    return () => clearTimeout(timeout)
   }, [])
 
   const handleTap = () => {
@@ -25,7 +22,6 @@ export default function MiniApp() {
     setTapCount(0)
   }
 
-  // Remove animation class after it plays
   useEffect(() => {
     if (animate) {
       const timer = setTimeout(() => setAnimate(false), 300)
