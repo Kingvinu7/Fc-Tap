@@ -27,6 +27,14 @@ export default function MiniApp() {
     })
   }, [])
 
+  // Calculate TPS when game ends
+  useEffect(() => {
+    if (gameOver) {
+      const tpsFinal = tapCount / 15
+      setTps(tpsFinal)
+    }
+  }, [gameOver, tapCount])
+
   const startGame = () => {
     setTapCount(0)
     setTimeLeft(15)
@@ -39,8 +47,7 @@ export default function MiniApp() {
           clearInterval(timerRef.current!)
           setIsGameRunning(false)
           setGameOver(true)
-          const tpsFinal = tapCount / 15
-          setTps(tpsFinal)
+          // TPS calculation moved to useEffect above
         }
         return prev - 1
       })
@@ -60,6 +67,9 @@ export default function MiniApp() {
     setIsGameRunning(false)
     setGameOver(false)
     setTimeLeft(15)
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+    }
     resetSoundRef.current?.play().catch(() => {})
   }
 
@@ -71,12 +81,36 @@ export default function MiniApp() {
     return '⚡️ Flash'
   }
 
+  const handleShareScore = async () => {
+    try {
+      const rank = getRank()
+      const text = `🎮 Just scored ${tapCount} taps in 15 seconds! 
+
+⚡️ ${tps.toFixed(1)} TPS | ${rank}
+
+Can you beat my score? 🔥`
+
+      await sdk.actions.composeCast({ text })
+    } catch (error) {
+      console.error("Error sharing score:", error)
+    }
+  }
+
   useEffect(() => {
     if (animate) {
       const timer = setTimeout(() => setAnimate(false), 300)
       return () => clearTimeout(timer)
     }
   }, [animate])
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
+    }
+  }, [])
 
   if (!isReady) {
     return (
@@ -179,19 +213,17 @@ export default function MiniApp() {
           </button>
 
           <button
-            onClick={() => {
-              const text = `I scored ${tapCount} taps in 15 seconds with ${tps.toFixed(1)} TPS on the Farcaster Tapping Game! 🕹️🔥\nTry it now!`
-              sdk.actions.composeCast({ text })
-            }}
+            onClick={handleShareScore}
             style={{
               marginTop: '10px',
-              padding: '10px 20px',
+              padding: '12px 24px',
               fontSize: '16px',
-              backgroundColor: '#9146FF',
+              backgroundColor: '#8B5CF6',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
               cursor: 'pointer',
+              fontWeight: 'bold',
             }}
           >
             📣 Share Your Score
