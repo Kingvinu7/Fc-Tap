@@ -58,10 +58,15 @@ export default function MiniApp() {
 
   const handleTap = () => {
     if (!isGameRunning || timeLeft <= 0) return
+
     rawTapCountRef.current += 1
-    setTapCount(rawTapCountRef.current)
+    setTapCount(prev => prev + 1)
     setAnimate(true)
-    tapSoundRef.current?.play().catch(() => {})
+
+    if (tapSoundRef.current) {
+      const soundClone = tapSoundRef.current.cloneNode() as HTMLAudioElement
+      soundClone.play().catch(() => {})
+    }
   }
 
   const handleReset = () => {
