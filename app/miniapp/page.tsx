@@ -27,7 +27,6 @@ export default function MiniApp() {
     })
   }, [])
 
-  // Calculate TPS when game ends
   useEffect(() => {
     if (gameOver) {
       const tpsFinal = tapCount / 15
@@ -47,7 +46,6 @@ export default function MiniApp() {
           clearInterval(timerRef.current!)
           setIsGameRunning(false)
           setGameOver(true)
-          // TPS calculation moved to useEffect above
         }
         return prev - 1
       })
@@ -58,7 +56,11 @@ export default function MiniApp() {
     if (!isGameRunning || timeLeft <= 0) return
     setTapCount((prev) => prev + 1)
     setAnimate(true)
-    tapSoundRef.current?.play().catch(() => {})
+    if (tapSoundRef.current) {
+      tapSoundRef.current.pause()
+      tapSoundRef.current.currentTime = 0
+      tapSoundRef.current.play().catch(() => {})
+    }
   }
 
   const handleReset = () => {
@@ -70,7 +72,11 @@ export default function MiniApp() {
     if (timerRef.current) {
       clearInterval(timerRef.current)
     }
-    resetSoundRef.current?.play().catch(() => {})
+    if (resetSoundRef.current) {
+      resetSoundRef.current.pause()
+      resetSoundRef.current.currentTime = 0
+      resetSoundRef.current.play().catch(() => {})
+    }
   }
 
   const getRank = () => {
@@ -103,7 +109,6 @@ Can you beat my score? 🔥`
     }
   }, [animate])
 
-  // Cleanup timer on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) {
@@ -121,7 +126,15 @@ Can you beat my score? 🔥`
   }
 
   return (
-    <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#f0f0f0', minHeight: '100vh' }}>
+    <div
+      style={{
+        padding: 20,
+        textAlign: 'center',
+        fontFamily: 'Arial, sans-serif',
+        background: 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
+        minHeight: '100vh'
+      }}
+    >
       <h1 style={{ marginBottom: '30px' }}>🎮 Farcaster Tapping Game</h1>
 
       {!gameOver && (
@@ -189,7 +202,15 @@ Can you beat my score? 🔥`
       )}
 
       {gameOver && (
-        <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', marginTop: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+        <div
+          style={{
+            backgroundColor: '#fff',
+            padding: '30px',
+            borderRadius: '12px',
+            marginTop: '20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          }}
+        >
           <h2 style={{ fontSize: '32px', marginBottom: 10 }}>⏰ Time's up!</h2>
           <p style={{ fontSize: '24px' }}>Total Taps: <strong>{tapCount}</strong></p>
           <p style={{ fontSize: '24px' }}>TPS: <strong>{tps.toFixed(1)}</strong></p>
@@ -231,7 +252,6 @@ Can you beat my score? 🔥`
         </div>
       )}
 
-      {/* Animation */}
       <style global jsx>{`
         .pop {
           animation: pop 0.3s ease-in-out;
