@@ -56,11 +56,7 @@ export default function MiniApp() {
     if (!isGameRunning || timeLeft <= 0) return
     setTapCount((prev) => prev + 1)
     setAnimate(true)
-    if (tapSoundRef.current) {
-      tapSoundRef.current.pause()
-      tapSoundRef.current.currentTime = 0
-      tapSoundRef.current.play().catch(() => {})
-    }
+    tapSoundRef.current?.play().catch(() => {})
   }
 
   const handleReset = () => {
@@ -69,14 +65,8 @@ export default function MiniApp() {
     setIsGameRunning(false)
     setGameOver(false)
     setTimeLeft(15)
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-    }
-    if (resetSoundRef.current) {
-      resetSoundRef.current.pause()
-      resetSoundRef.current.currentTime = 0
-      resetSoundRef.current.play().catch(() => {})
-    }
+    if (timerRef.current) clearInterval(timerRef.current)
+    resetSoundRef.current?.play().catch(() => {})
   }
 
   const getRank = () => {
@@ -85,6 +75,14 @@ export default function MiniApp() {
     if (tps < 7) return '🐇 Rabbit'
     if (tps < 9) return '🐆 Cheetah'
     return '⚡️ Flash'
+  }
+
+  const getRankMessage = () => {
+    if (tps < 3) return "Slow and steady... but let's speed it up!"
+    if (tps < 5) return "Nice effort, you’re picking up pace!"
+    if (tps < 7) return "Fast paws! You're getting sharp!"
+    if (tps < 9) return "Blazing speed! Almost unstoppable!"
+    return "Lightning fingers! You’re a tapping legend!"
   }
 
   const handleShareScore = async () => {
@@ -98,7 +96,7 @@ Can you beat my score? 🔥`
 
       await sdk.actions.composeCast({ text })
     } catch (error) {
-      console.error("Error sharing score:", error)
+      console.error('Error sharing score:', error)
     }
   }
 
@@ -111,9 +109,7 @@ Can you beat my score? 🔥`
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-      }
+      if (timerRef.current) clearInterval(timerRef.current)
     }
   }, [])
 
@@ -131,8 +127,9 @@ Can you beat my score? 🔥`
         padding: 20,
         textAlign: 'center',
         fontFamily: 'Arial, sans-serif',
-        background: 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
-        minHeight: '100vh'
+        background: 'linear-gradient(to right, #8e2de2, #4a00e0)',
+        color: '#fff',
+        minHeight: '100vh',
       }}
     >
       <h1 style={{ marginBottom: '30px' }}>🎮 Farcaster Tapping Game</h1>
@@ -140,10 +137,7 @@ Can you beat my score? 🔥`
       {!gameOver && (
         <div>
           <h2 style={{ fontSize: '24px', marginBottom: 10 }}>⏱️ Time Left: {timeLeft}s</h2>
-          <h2
-            className={animate ? 'pop' : ''}
-            style={{ fontSize: '48px', margin: '0 0 20px 0' }}
-          >
+          <h2 className={animate ? 'pop' : ''} style={{ fontSize: '48px', margin: '0 0 20px 0' }}>
             Taps: {tapCount}
           </h2>
 
@@ -204,17 +198,22 @@ Can you beat my score? 🔥`
       {gameOver && (
         <div
           style={{
-            backgroundColor: '#fff',
+            background: 'rgba(255, 255, 255, 0.1)',
             padding: '30px',
             borderRadius: '12px',
             marginTop: '20px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
           }}
         >
           <h2 style={{ fontSize: '32px', marginBottom: 10 }}>⏰ Time's up!</h2>
-          <p style={{ fontSize: '24px' }}>Total Taps: <strong>{tapCount}</strong></p>
-          <p style={{ fontSize: '24px' }}>TPS: <strong>{tps.toFixed(1)}</strong></p>
-          <p style={{ fontSize: '20px' }}>Rank: <strong>{getRank()}</strong></p>
+          <p style={{ fontSize: '24px' }}>
+            You're a <strong>{getRank()}</strong>
+          </p>
+          <p style={{ fontSize: '18px', fontStyle: 'italic' }}>{getRankMessage()}</p>
+          <p style={{ fontSize: '24px' }}>
+            You tapped <strong>{tapCount}</strong> points with{' '}
+            <strong>{tps.toFixed(1)} TPS</strong>
+          </p>
 
           <button
             onClick={startGame}
@@ -252,14 +251,31 @@ Can you beat my score? 🔥`
         </div>
       )}
 
+      <footer style={{ marginTop: '30px', fontSize: '14px' }}>
+        <a
+          href="https://farcaster.xyz/vinu07"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#ffffffcc', textDecoration: 'none' }}
+        >
+          🔧 Built by Vinu07
+        </a>
+      </footer>
+
       <style global jsx>{`
         .pop {
           animation: pop 0.3s ease-in-out;
         }
         @keyframes pop {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.3); }
-          100% { transform: scale(1); }
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.3);
+          }
+          100% {
+            transform: scale(1);
+          }
         }
       `}</style>
     </div>
