@@ -8,11 +8,13 @@ export default function MiniApp() {
   const [tapCount, setTapCount] = useState(0)
   const [animate, setAnimate] = useState(false)
 
-  const tapSoundRef = useRef<HTMLAudioElement | null>(null)
+  const tapSoundsRef = useRef<HTMLAudioElement[]>([])
+  const soundIndexRef = useRef(0)
   const resetSoundRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    tapSoundRef.current = new Audio('/tap.mp3')
+    // Create a pool of 5 audio elements for rapid tapping
+    tapSoundsRef.current = Array.from({ length: 5 }, () => new Audio('/tap.mp3'))
     resetSoundRef.current = new Audio('/reset.mp3')
   }, [])
 
@@ -23,9 +25,15 @@ export default function MiniApp() {
   }, [])
 
   const handleTap = () => {
-    setTapCount((prev) => prev + 1)
+    setTapCount(prev => prev + 1)
     setAnimate(true)
-    tapSoundRef.current?.play().catch(() => {})
+
+    const currentSound = tapSoundsRef.current[soundIndexRef.current]
+    if (currentSound) {
+      currentSound.currentTime = 0
+      currentSound.play().catch(() => {})
+      soundIndexRef.current = (soundIndexRef.current + 1) % tapSoundsRef.current.length
+    }
   }
 
   const handleReset = () => {
@@ -109,7 +117,6 @@ export default function MiniApp() {
         <p>If you liked the game, follow <strong>@vinu07</strong></p>
       </div>
 
-      {/* Add global keyframe styling */}
       <style global jsx>{`
         .pop {
           animation: pop 0.3s ease-in-out;
