@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     other: {
       'fc:frame': 'vNext',
       'fc:frame:image': `${baseUrl}/og.png`,
-      'fc:frame:button:1': 'Click Me!',
+      'fc:frame:button:1': 'Start tapping now',
       'fc:frame:button:1:action': 'post',
       'fc:frame:button:1:target': `${baseUrl}/api/frames`,
     },
