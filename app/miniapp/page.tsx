@@ -12,12 +12,16 @@ export default function MiniApp() {
   const [tps, setTps] = useState(0)
   const [gameOver, setGameOver] = useState(false)
 
-  const tapSoundUrl = '/tap.mp3'
+  const tapSoundRef = useRef<HTMLAudioElement | null>(null)
   const resetSoundRef = useRef<HTMLAudioElement | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const rawTapCountRef = useRef(0)
 
   useEffect(() => {
+    tapSoundRef.current = new Audio('/tap.mp3')
+    tapSoundRef.current.load()
     resetSoundRef.current = new Audio('/reset.mp3')
+    resetSoundRef.current.load()
   }, [])
 
   useEffect(() => {
@@ -28,12 +32,13 @@ export default function MiniApp() {
 
   useEffect(() => {
     if (gameOver) {
-      const tpsFinal = tapCount / 15
+      const tpsFinal = rawTapCountRef.current / 15
       setTps(tpsFinal)
     }
-  }, [gameOver, tapCount])
+  }, [gameOver])
 
   const startGame = () => {
+    rawTapCountRef.current = 0
     setTapCount(0)
     setTimeLeft(15)
     setIsGameRunning(true)
@@ -53,29 +58,29 @@ export default function MiniApp() {
 
   const handleTap = () => {
     if (!isGameRunning || timeLeft <= 0) return
-    setTapCount((prev) => prev + 1)
+    rawTapCountRef.current += 1
+    setTapCount(rawTapCountRef.current)
     setAnimate(true)
-    new Audio(tapSoundUrl).play().catch(() => {})
+    tapSoundRef.current?.play().catch(() => {})
   }
 
   const handleReset = () => {
+    rawTapCountRef.current = 0
     setTapCount(0)
     setTps(0)
     setIsGameRunning(false)
     setGameOver(false)
     setTimeLeft(15)
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-    }
+    if (timerRef.current) clearInterval(timerRef.current)
     resetSoundRef.current?.play().catch(() => {})
   }
 
   const getRank = () => {
-    if (tps < 3) return { label: '🐢 Turtle', message: "You're slow and steady!" }
-    if (tps < 5) return { label: '🐼 Panda', message: "Chill but solid taps!" }
-    if (tps < 7) return { label: '🐇 Rabbit', message: "Fast and bouncy!" }
-    if (tps < 9) return { label: '🐆 Cheetah', message: "Blazing speed!" }
-    return { label: '⚡️ Flash', message: "You're a tapping legend!" }
+    if (tps < 3) return { name: '🐢 Turtle', message: 'Slow and steady!' }
+    if (tps < 5) return { name: '🐼 Panda', message: 'Chill but strong!' }
+    if (tps < 7) return { name: '🐇 Rabbit', message: 'Quick on your feet!' }
+    if (tps < 9) return { name: '🐆 Cheetah', message: 'Blazing fast!' }
+    return { name: '⚡️ Flash', message: 'You tapped like lightning!' }
   }
 
   const handleShareScore = async () => {
@@ -83,13 +88,13 @@ export default function MiniApp() {
       const rank = getRank()
       const text = `🎮 Just scored ${tapCount} taps in 15 seconds! 
 
-⚡️ ${tps.toFixed(1)} TPS | ${rank.label}
+⚡️ ${tps.toFixed(1)} TPS | ${rank.name}
 
 Can you beat my score? 🔥`
 
       await sdk.actions.composeCast({ text })
     } catch (error) {
-      console.error("Error sharing score:", error)
+      console.error('Error sharing score:', error)
     }
   }
 
@@ -102,32 +107,23 @@ Can you beat my score? 🔥`
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-      }
+      if (timerRef.current) clearInterval(timerRef.current)
     }
   }, [])
 
-  const rank = getRank()
-
   if (!isReady) {
     return (
-      <div style={{ padding: 20, textAlign: 'center' }}>
+      <div style={{ padding: 20, textAlign: 'center', backgroundColor: '#800080', minHeight: '100vh', color: 'white' }}>
         <h1>🎮 Loading Farcaster Tapping Game...</h1>
       </div>
     )
   }
 
+  const rank = getRank()
+
   return (
-    <div style={{
-      padding: 20,
-      textAlign: 'center',
-      fontFamily: 'Arial, sans-serif',
-      background: 'linear-gradient(135deg, #7F00FF, #E100FF)',
-      minHeight: '100vh',
-      color: '#fff',
-    }}>
-      <h1 style={{ marginBottom: '30px', fontSize: '32px' }}>🎮 Farcaster Tapping Game</h1>
+    <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#800080', minHeight: '100vh', color: 'white' }}>
+      <h1 style={{ marginBottom: '30px' }}>🎮 Farcaster Tapping Game</h1>
 
       {!gameOver && (
         <div>
@@ -146,8 +142,8 @@ Can you beat my score? 🔥`
               fontSize: '24px',
               padding: '15px 30px',
               margin: '10px',
-              backgroundColor: isGameRunning ? '#ff6f61' : '#888',
-              color: 'white',
+              backgroundColor: isGameRunning ? '#FFD700' : '#aaa',
+              color: '#000',
               border: 'none',
               borderRadius: '10px',
               cursor: isGameRunning ? 'pointer' : 'not-allowed',
@@ -164,7 +160,7 @@ Can you beat my score? 🔥`
                 fontSize: '18px',
                 padding: '10px 20px',
                 margin: '10px',
-                backgroundColor: '#2196F3',
+                backgroundColor: '#00BFFF',
                 color: 'white',
                 border: 'none',
                 borderRadius: '10px',
@@ -195,20 +191,17 @@ Can you beat my score? 🔥`
 
       {gameOver && (
         <div style={{
-          background: 'linear-gradient(135deg, #FFE29F, #FFA99F)',
+          backgroundColor: '#22223b',
           padding: '30px',
           borderRadius: '12px',
           marginTop: '20px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          maxWidth: '400px',
-          margin: '20px auto',
-          color: '#333'
+          color: 'white',
         }}>
-          <h2 style={{ fontSize: '28px', marginBottom: 10 }}>⏰ Time's up!</h2>
-          <p style={{ fontSize: '22px' }}>You're a <strong>{rank.label}</strong></p>
-          <p style={{ fontSize: '16px', marginBottom: '10px' }}>{rank.message}</p>
-          <p style={{ fontSize: '20px' }}>You tapped <strong>{tapCount}</strong> times</p>
-          <p style={{ fontSize: '20px' }}>TPS: <strong>{tps.toFixed(1)}</strong></p>
+          <h2 style={{ fontSize: '32px', marginBottom: 10 }}>⏰ Time's up!</h2>
+          <p style={{ fontSize: '24px', margin: '10px 0' }}>You're a <strong>{rank.name}</strong></p>
+          <p style={{ fontSize: '20px', fontStyle: 'italic' }}>{rank.message}</p>
+          <p style={{ fontSize: '22px' }}>You tapped <strong>{tapCount}</strong> times with <strong>{tps.toFixed(1)} TPS</strong></p>
 
           <button
             onClick={startGame}
@@ -246,9 +239,9 @@ Can you beat my score? 🔥`
         </div>
       )}
 
-      <footer style={{ marginTop: '40px', fontSize: '14px', color: '#eee' }}>
-        Built by <a href="https://farcaster.xyz/vinu07" target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontWeight: 'bold' }}>Vinu07</a>
-      </footer>
+      <p style={{ marginTop: '40px', fontSize: '14px', color: '#eee' }}>
+        Built by <a href="https://farcaster.xyz/vinu07" target="_blank" rel="noopener noreferrer" style={{ color: '#FFD700', textDecoration: 'none' }}>@vinu07</a>
+      </p>
 
       <style global jsx>{`
         .pop {
