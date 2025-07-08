@@ -9,15 +9,15 @@ export default function Head() {
             version: "next",
             imageUrl: "https://fc-taps.vercel.app/og.png",
             button: {
-              title: "Play Tap Game",
+              title: "Start tapping now",
               action: {
                 type: "launch_miniapp",
-                url: "https://fc-taps.vercel.app/miniapp/"
+                url: "https://fc-taps.vercel.app/miniapp"
               }
             }
           })
         }}
       />
     </>
-  );
+  )
 }
