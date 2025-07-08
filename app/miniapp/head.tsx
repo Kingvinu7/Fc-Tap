@@ -5,7 +5,7 @@ export default function Head() {
         name="fc:miniapp"
         content='{
           "version": "next",
-          "imageUrl": "https://fc-taps.vercel.app/og.png",
+          "imageUrl": "https://fc-taps.vercel.app/splash.png",
           "button": {
             "title": "Play Tap Game",
             "action": {
