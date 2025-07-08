@@ -95,7 +95,9 @@ export default function MiniApp() {
 
 ⚡️ ${tps.toFixed(1)} TPS | ${rank.name}
 
-Can you beat my score? 🔥`
+Can you beat my score? 🔥
+
+👉 Play here: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
 
       await sdk.actions.composeCast({ text })
     } catch (error) {
@@ -133,10 +135,7 @@ Can you beat my score? 🔥`
       {!gameOver && (
         <div>
           <h2 style={{ fontSize: '24px', marginBottom: 10 }}>⏱️ Time Left: {timeLeft}s</h2>
-          <h2
-            className={animate ? 'pop' : ''}
-            style={{ fontSize: '48px', margin: '0 0 20px 0' }}
-          >
+          <h2 className={animate ? 'pop' : ''} style={{ fontSize: '48px', margin: '0 0 20px 0' }}>
             Taps: {tapCount}
           </h2>
 
@@ -260,4 +259,4 @@ Can you beat my score? 🔥`
       `}</style>
     </div>
   )
-}
+          }
