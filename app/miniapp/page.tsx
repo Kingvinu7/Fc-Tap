@@ -12,12 +12,11 @@ export default function MiniApp() {
   const [tps, setTps] = useState(0)
   const [gameOver, setGameOver] = useState(false)
 
-  const tapSoundRef = useRef<HTMLAudioElement | null>(null)
+  const tapSoundUrl = '/tap.mp3'
   const resetSoundRef = useRef<HTMLAudioElement | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    tapSoundRef.current = new Audio('/tap.mp3')
     resetSoundRef.current = new Audio('/reset.mp3')
   }, [])
 
@@ -56,7 +55,7 @@ export default function MiniApp() {
     if (!isGameRunning || timeLeft <= 0) return
     setTapCount((prev) => prev + 1)
     setAnimate(true)
-    tapSoundRef.current?.play().catch(() => {})
+    new Audio(tapSoundUrl).play().catch(() => {})
   }
 
   const handleReset = () => {
@@ -65,24 +64,18 @@ export default function MiniApp() {
     setIsGameRunning(false)
     setGameOver(false)
     setTimeLeft(15)
-    if (timerRef.current) clearInterval(timerRef.current)
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+    }
     resetSoundRef.current?.play().catch(() => {})
   }
 
   const getRank = () => {
-    if (tps < 3) return '🐢 Turtle'
-    if (tps < 5) return '🐼 Panda'
-    if (tps < 7) return '🐇 Rabbit'
-    if (tps < 9) return '🐆 Cheetah'
-    return '⚡️ Flash'
-  }
-
-  const getRankMessage = () => {
-    if (tps < 3) return "Slow and steady... but let's speed it up!"
-    if (tps < 5) return "Nice effort, you’re picking up pace!"
-    if (tps < 7) return "Fast paws! You're getting sharp!"
-    if (tps < 9) return "Blazing speed! Almost unstoppable!"
-    return "Lightning fingers! You’re a tapping legend!"
+    if (tps < 3) return { label: '🐢 Turtle', message: "You're slow and steady!" }
+    if (tps < 5) return { label: '🐼 Panda', message: "Chill but solid taps!" }
+    if (tps < 7) return { label: '🐇 Rabbit', message: "Fast and bouncy!" }
+    if (tps < 9) return { label: '🐆 Cheetah', message: "Blazing speed!" }
+    return { label: '⚡️ Flash', message: "You're a tapping legend!" }
   }
 
   const handleShareScore = async () => {
@@ -90,13 +83,13 @@ export default function MiniApp() {
       const rank = getRank()
       const text = `🎮 Just scored ${tapCount} taps in 15 seconds! 
 
-⚡️ ${tps.toFixed(1)} TPS | ${rank}
+⚡️ ${tps.toFixed(1)} TPS | ${rank.label}
 
 Can you beat my score? 🔥`
 
       await sdk.actions.composeCast({ text })
     } catch (error) {
-      console.error('Error sharing score:', error)
+      console.error("Error sharing score:", error)
     }
   }
 
@@ -109,9 +102,13 @@ Can you beat my score? 🔥`
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
     }
   }, [])
+
+  const rank = getRank()
 
   if (!isReady) {
     return (
@@ -122,22 +119,23 @@ Can you beat my score? 🔥`
   }
 
   return (
-    <div
-      style={{
-        padding: 20,
-        textAlign: 'center',
-        fontFamily: 'Arial, sans-serif',
-        background: 'linear-gradient(to right, #8e2de2, #4a00e0)',
-        color: '#fff',
-        minHeight: '100vh',
-      }}
-    >
-      <h1 style={{ marginBottom: '30px' }}>🎮 Farcaster Tapping Game</h1>
+    <div style={{
+      padding: 20,
+      textAlign: 'center',
+      fontFamily: 'Arial, sans-serif',
+      background: 'linear-gradient(135deg, #fceabb 0%, #f8b500 100%)',
+      minHeight: '100vh',
+      color: '#333',
+    }}>
+      <h1 style={{ marginBottom: '30px', fontSize: '32px' }}>🎮 Farcaster Tapping Game</h1>
 
       {!gameOver && (
         <div>
           <h2 style={{ fontSize: '24px', marginBottom: 10 }}>⏱️ Time Left: {timeLeft}s</h2>
-          <h2 className={animate ? 'pop' : ''} style={{ fontSize: '48px', margin: '0 0 20px 0' }}>
+          <h2
+            className={animate ? 'pop' : ''}
+            style={{ fontSize: '48px', margin: '0 0 20px 0' }}
+          >
             Taps: {tapCount}
           </h2>
 
@@ -148,7 +146,7 @@ Can you beat my score? 🔥`
               fontSize: '24px',
               padding: '15px 30px',
               margin: '10px',
-              backgroundColor: isGameRunning ? '#4CAF50' : '#888',
+              backgroundColor: isGameRunning ? '#ff6f61' : '#888',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
@@ -196,24 +194,20 @@ Can you beat my score? 🔥`
       )}
 
       {gameOver && (
-        <div
-          style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            padding: '30px',
-            borderRadius: '12px',
-            marginTop: '20px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-          }}
-        >
-          <h2 style={{ fontSize: '32px', marginBottom: 10 }}>⏰ Time's up!</h2>
-          <p style={{ fontSize: '24px' }}>
-            You're a <strong>{getRank()}</strong>
-          </p>
-          <p style={{ fontSize: '18px', fontStyle: 'italic' }}>{getRankMessage()}</p>
-          <p style={{ fontSize: '24px' }}>
-            You tapped <strong>{tapCount}</strong> points with{' '}
-            <strong>{tps.toFixed(1)} TPS</strong>
-          </p>
+        <div style={{
+          background: 'white',
+          padding: '30px',
+          borderRadius: '12px',
+          marginTop: '20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          maxWidth: '400px',
+          margin: '20px auto'
+        }}>
+          <h2 style={{ fontSize: '28px', marginBottom: 10 }}>⏰ Time's up!</h2>
+          <p style={{ fontSize: '22px' }}>You're a <strong>{rank.label}</strong></p>
+          <p style={{ fontSize: '16px', marginBottom: '10px', color: '#666' }}>{rank.message}</p>
+          <p style={{ fontSize: '20px' }}>You tapped <strong>{tapCount}</strong> times</p>
+          <p style={{ fontSize: '20px' }}>TPS: <strong>{tps.toFixed(1)}</strong></p>
 
           <button
             onClick={startGame}
@@ -251,15 +245,8 @@ Can you beat my score? 🔥`
         </div>
       )}
 
-      <footer style={{ marginTop: '30px', fontSize: '14px' }}>
-        <a
-          href="https://farcaster.xyz/vinu07"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: '#ffffffcc', textDecoration: 'none' }}
-        >
-          🔧 Built by Vinu07
-        </a>
+      <footer style={{ marginTop: '40px', fontSize: '14px', color: '#333' }}>
+        Built by <a href="https://farcaster.xyz/vinu07" target="_blank" rel="noopener noreferrer" style={{ color: '#6b46c1', textDecoration: 'none' }}>Vinu07</a>
       </footer>
 
       <style global jsx>{`
@@ -267,15 +254,9 @@ Can you beat my score? 🔥`
           animation: pop 0.3s ease-in-out;
         }
         @keyframes pop {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.3);
-          }
-          100% {
-            transform: scale(1);
-          }
+          0% { transform: scale(1); }
+          50% { transform: scale(1.3); }
+          100% { transform: scale(1); }
         }
       `}</style>
     </div>
