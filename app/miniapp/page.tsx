@@ -123,9 +123,9 @@ Can you beat my score? 🔥`
       padding: 20,
       textAlign: 'center',
       fontFamily: 'Arial, sans-serif',
-      background: 'linear-gradient(135deg, #fceabb 0%, #f8b500 100%)',
+      background: 'linear-gradient(135deg, #7F00FF, #E100FF)',
       minHeight: '100vh',
-      color: '#333',
+      color: '#fff',
     }}>
       <h1 style={{ marginBottom: '30px', fontSize: '32px' }}>🎮 Farcaster Tapping Game</h1>
 
@@ -195,17 +195,18 @@ Can you beat my score? 🔥`
 
       {gameOver && (
         <div style={{
-          background: 'white',
+          background: 'linear-gradient(135deg, #FFE29F, #FFA99F)',
           padding: '30px',
           borderRadius: '12px',
           marginTop: '20px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
           maxWidth: '400px',
-          margin: '20px auto'
+          margin: '20px auto',
+          color: '#333'
         }}>
           <h2 style={{ fontSize: '28px', marginBottom: 10 }}>⏰ Time's up!</h2>
           <p style={{ fontSize: '22px' }}>You're a <strong>{rank.label}</strong></p>
-          <p style={{ fontSize: '16px', marginBottom: '10px', color: '#666' }}>{rank.message}</p>
+          <p style={{ fontSize: '16px', marginBottom: '10px' }}>{rank.message}</p>
           <p style={{ fontSize: '20px' }}>You tapped <strong>{tapCount}</strong> times</p>
           <p style={{ fontSize: '20px' }}>TPS: <strong>{tps.toFixed(1)}</strong></p>
 
@@ -245,8 +246,8 @@ Can you beat my score? 🔥`
         </div>
       )}
 
-      <footer style={{ marginTop: '40px', fontSize: '14px', color: '#333' }}>
-        Built by <a href="https://farcaster.xyz/vinu07" target="_blank" rel="noopener noreferrer" style={{ color: '#6b46c1', textDecoration: 'none' }}>Vinu07</a>
+      <footer style={{ marginTop: '40px', fontSize: '14px', color: '#eee' }}>
+        Built by <a href="https://farcaster.xyz/vinu07" target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontWeight: 'bold' }}>Vinu07</a>
       </footer>
 
       <style global jsx>{`
