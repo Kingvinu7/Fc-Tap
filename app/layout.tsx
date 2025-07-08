@@ -9,14 +9,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: 'FC Tap Game',
-    description: 'A fun clicking game on Farcaster',
+    description: 'Tap as fast as you can!',
     metadataBase: new URL(baseUrl),
     openGraph: {
       title: 'FC Tap Game',
       description: 'Tap as fast as you can!',
       images: [
         {
-          url: '/og.png', // this is the one that matters
+          url: '/og.png',
           width: 1200,
           height: 630,
           alt: 'FC Tap Game Preview',
@@ -25,10 +25,23 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     other: {
       'fc:frame': 'vNext',
-      'fc:frame:image': `${baseUrl}/og.png`, // <--- THE KEY LINE
+      'fc:frame:image': `${baseUrl}/og.png`,
       'fc:frame:button:1': 'Click Me!',
       'fc:frame:button:1:action': 'post',
       'fc:frame:button:1:target': `${baseUrl}/api/frames`,
     },
   }
+}
+
+// ✅ MAKE THIS ASYNC
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  )
 }
