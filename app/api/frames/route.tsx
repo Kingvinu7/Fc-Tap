@@ -6,21 +6,7 @@ const frames = createFrames();
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
-const handler = frames(async (ctx) => {
-  const count = ctx.state && typeof ctx.state === 'object' && 'count' in ctx.state
-    ? Number(ctx.state.count)
-    : 0;
-
-  let newCount = count;
-
-  if (!ctx.message) {
-    newCount = 0;
-  } else if (ctx.message.buttonIndex === 1) {
-    newCount = count + 1;
-  } else if (ctx.message.buttonIndex === 2) {
-    newCount = 0;
-  }
-
+const handler = frames(async () => {
   return {
     image: (
       <div style={{
@@ -30,26 +16,20 @@ const handler = frames(async (ctx) => {
         justifyContent: 'center',
         width: '100%',
         height: '100%',
-        backgroundColor: '#FFD700',
+        backgroundColor: '#800080',
         fontSize: '60px',
-        color: 'navy',
+        color: 'white',
         fontFamily: 'Arial, sans-serif'
       }}>
-        <h1 style={{ margin: '0 0 20px 0' }}>🎮 FC Tap Game</h1>
-        <p style={{ margin: '0', fontSize: '48px', fontWeight: 'bold' }}>Clicks: {newCount}</p>
-        <p style={{ margin: '10px 0 0 0', fontSize: '24px' }}>
-          {newCount === 0 ? "Start tapping!" : "Great job! Keep going!"}
-        </p>
+        <h1>🎮 FC TAP GAME</h1>
+        <p style={{ fontSize: '24px', marginTop: '20px' }}>Tap as fast as you can!</p>
       </div>
     ),
     buttons: [
-      <Button action="post" target="/api/frames" key="click">🎯 Click Me!</Button>,
-      <Button action="post" target="/api/frames" key="reset">🔄 Reset</Button>,
-      <Button action="link" target="https://fc-taps.vercel.app" key="link">🏠 Home</Button>,
+      <Button action="link" target="https://fc-taps.vercel.app/miniapp">▶️ Launch Game</Button>,
     ],
-    state: { count: newCount },
     title: "FC Tap Game",
-    description: "A fun clicking game on Farcaster! See how many clicks you can get!",
+    description: "A fast-tapping challenge. Launch to play!",
     imageOptions: {
       aspectRatio: "1.91:1",
     },
