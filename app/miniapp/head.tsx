@@ -12,7 +12,7 @@ export default function Head() {
               title: "Play Tap Game",
               action: {
                 type: "launch_miniapp",
-                url: "https://fc-taps.vercel.app/miniapp"
+                url: "https://fc-taps.vercel.app/miniapp/"
               }
             }
           })
