@@ -275,4 +275,4 @@ export default function MiniApp() {
       `}</style>
     </div>
   )
-          
+}
