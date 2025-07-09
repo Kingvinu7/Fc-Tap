@@ -40,11 +40,15 @@ export default function MiniApp() {
 
       setTimeout(() => {
         let storedName = localStorage.getItem('fc-username')
+
         if (!storedName) {
           storedName = prompt(
             'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits.\n(Tip: enter it correctly, you won’t be able to change it later!)'
           )?.trim() || ''
-          if (storedName) localStorage.setItem('fc-username', storedName)
+
+          if (storedName) {
+            localStorage.setItem('fc-username', storedName)
+          }
         }
 
         if (storedName) {
@@ -147,7 +151,7 @@ Can you beat my score? 🔥
 
   if (!isReady) {
     return (
-      <div style={{ padding: 20, textAlign: 'center', backgroundColor: '#800080', minHeight: '100vh', color: '#f8e8ff' }}>
+      <div style={{ padding: 20, textAlign: 'center', backgroundColor: '#800080', minHeight: '100vh', color: '#ffe241' }}>
         <h1>🎮 Loading Farcaster Tapping Game...</h1>
       </div>
     )
@@ -156,7 +160,16 @@ Can you beat my score? 🔥
   const rank = getRank()
 
   return (
-    <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#800080', minHeight: '100vh', color: '#f8e8ff' }}>
+    <div
+      style={{
+        padding: 20,
+        textAlign: 'center',
+        fontFamily: 'Arial, sans-serif',
+        backgroundColor: '#800080',
+        minHeight: '100vh',
+        color: '#ffe241'
+      }}
+    >
       <h1 style={{ marginBottom: '30px' }}>🎮 Farcaster Tapping Game</h1>
 
       <button
@@ -166,7 +179,7 @@ Can you beat my score? 🔥
           padding: '8px 16px',
           borderRadius: '8px',
           backgroundColor: '#333',
-          color: '#f8e8ff',
+          color: '#ffe241',
           cursor: 'pointer'
         }}
       >
@@ -222,8 +235,8 @@ Can you beat my score? 🔥
                 🎯 TAP ME!
               </button>
 
-              {!isGameRunning && timeLeft === 15 && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                {!isGameRunning && timeLeft === 15 && (
                   <button
                     onClick={startGame}
                     style={{
@@ -232,7 +245,7 @@ Can you beat my score? 🔥
                       padding: '10px 20px',
                       marginBottom: '10px',
                       backgroundColor: '#00BFFF',
-                      color: '#f8e8ff',
+                      color: '#ffe241',
                       border: 'none',
                       borderRadius: '10px',
                       cursor: 'pointer'
@@ -240,44 +253,48 @@ Can you beat my score? 🔥
                   >
                     ▶️ Start Game
                   </button>
-                  <button
-                    onClick={handleReset}
-                    style={{
-                      width: '200px',
-                      fontSize: '18px',
-                      padding: '10px 20px',
-                      backgroundColor: '#f44336',
-                      color: '#f8e8ff',
-                      border: 'none',
-                      borderRadius: '10px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    🔄 Reset
-                  </button>
-                </div>
-              )}
+                )}
+
+                <button
+                  onClick={handleReset}
+                  style={{
+                    width: '200px',
+                    fontSize: '18px',
+                    padding: '10px 20px',
+                    backgroundColor: '#f44336',
+                    color: '#ffe241',
+                    border: 'none',
+                    borderRadius: '10px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔄 Reset
+                </button>
+              </div>
             </div>
           ) : (
-            <div style={{
-              backgroundColor: '#22223b',
-              padding: '30px',
-              borderRadius: '12px',
-              marginTop: '20px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-            }}>
+            <div
+              style={{
+                backgroundColor: '#22223b',
+                padding: '30px',
+                borderRadius: '12px',
+                marginTop: '20px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                color: '#ffe241'
+              }}
+            >
               <h2 style={{ fontSize: '32px', marginBottom: 10 }}>⏰ Time's up!</h2>
               <p style={{ fontSize: '24px' }}>You're a <strong>{rank.name}</strong></p>
               <p style={{ fontSize: '20px', fontStyle: 'italic' }}>{rank.message}</p>
               <p style={{ fontSize: '22px' }}>You tapped <strong>{tapCount}</strong> times with <strong>{tps.toFixed(1)} TPS</strong></p>
               <button onClick={startGame} style={{
                 marginTop: '20px', padding: '10px 20px', fontSize: '18px',
-                backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '10px',
+                backgroundColor: '#4CAF50', color: '#ffe241', border: 'none', borderRadius: '10px',
                 cursor: 'pointer', fontWeight: 'bold'
               }}>🔁 Play Again</button>
               <button onClick={handleShareScore} style={{
                 marginTop: '10px', padding: '12px 24px', fontSize: '16px',
-                backgroundColor: '#8B5CF6', color: 'white', border: 'none',
+                backgroundColor: '#8B5CF6', color: '#ffe241', border: 'none',
                 borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold'
               }}>📣 Share Your Score</button>
             </div>
@@ -285,7 +302,7 @@ Can you beat my score? 🔥
         </>
       )}
 
-      <p style={{ marginTop: '40px', fontSize: '14px', color: '#f8e8ff' }}>
+      <p style={{ marginTop: '40px', fontSize: '14px', color: '#ffe241' }}>
         Built by <a href="https://farcaster.xyz/vinu07" target="_blank" rel="noopener noreferrer" style={{ color: '#FFD700', textDecoration: 'none' }}>@vinu07</a>
       </p>
 
