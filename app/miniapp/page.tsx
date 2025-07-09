@@ -36,8 +36,7 @@ export default function MiniApp() {
 
       const saveScore = async () => {
         try {
-          const context = await sdk.getContext()
-          const user = context?.user
+          const user = sdk.context?.user
           if (user?.fid) {
             const profile = await sdk.actions.viewProfile({ fid: user.fid })
             if (profile?.username) {
@@ -201,4 +200,4 @@ export default function MiniApp() {
       `}</style>
     </div>
   )
-          }
+}
