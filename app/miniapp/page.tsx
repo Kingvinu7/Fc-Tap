@@ -51,9 +51,21 @@ export default function MiniApp() {
         const context = await sdk.context
         const user = context.user
         if (user?.fid) {
-          const profile = await sdk.actions.viewProfile({ fid: user.fid })
-          if (profile?.username) {
-            setCurrentUser({ fid: user.fid, username: profile.username })
+          try {
+            const profile = await sdk.actions.viewProfile({ fid: user.fid }) as any
+            if (profile && (profile.username || profile.displayName)) {
+              setCurrentUser({ 
+                fid: user.fid, 
+                username: profile.username || profile.displayName || `user-${user.fid}` 
+              })
+            } else {
+              // Fallback if profile doesn't have username
+              setCurrentUser({ fid: user.fid, username: `user-${user.fid}` })
+            }
+          } catch (profileError) {
+            console.error('Error fetching profile:', profileError)
+            // Fallback to fid-based username
+            setCurrentUser({ fid: user.fid, username: `user-${user.fid}` })
           }
         }
       } catch (e) {
@@ -263,4 +275,4 @@ export default function MiniApp() {
       `}</style>
     </div>
   )
-}
+          
