@@ -40,15 +40,11 @@ export default function MiniApp() {
 
       setTimeout(() => {
         let storedName = localStorage.getItem('fc-username')
-
         if (!storedName) {
           storedName = prompt(
             'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits.\n(Tip: enter it correctly, you won’t be able to change it later!)'
           )?.trim() || ''
-
-          if (storedName) {
-            localStorage.setItem('fc-username', storedName)
-          }
+          if (storedName) localStorage.setItem('fc-username', storedName)
         }
 
         if (storedName) {
@@ -160,16 +156,7 @@ Can you beat my score? 🔥
   const rank = getRank()
 
   return (
-    <div
-      style={{
-        padding: 20,
-        textAlign: 'center',
-        fontFamily: 'Arial, sans-serif',
-        backgroundColor: '#800080',
-        minHeight: '100vh',
-        color: '#f8e8ff'
-      }}
-    >
+    <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#800080', minHeight: '100vh', color: '#f8e8ff' }}>
       <h1 style={{ marginBottom: '30px' }}>🎮 Farcaster Tapping Game</h1>
 
       <button
@@ -245,7 +232,7 @@ Can you beat my score? 🔥
                       padding: '10px 20px',
                       marginBottom: '10px',
                       backgroundColor: '#00BFFF',
-                      color: 'white',
+                      color: '#f8e8ff',
                       border: 'none',
                       borderRadius: '10px',
                       cursor: 'pointer'
@@ -260,7 +247,7 @@ Can you beat my score? 🔥
                       fontSize: '18px',
                       padding: '10px 20px',
                       backgroundColor: '#f44336',
-                      color: 'white',
+                      color: '#f8e8ff',
                       border: 'none',
                       borderRadius: '10px',
                       cursor: 'pointer'
@@ -272,15 +259,13 @@ Can you beat my score? 🔥
               )}
             </div>
           ) : (
-            <div
-              style={{
-                backgroundColor: '#22223b',
-                padding: '30px',
-                borderRadius: '12px',
-                marginTop: '20px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-              }}
-            >
+            <div style={{
+              backgroundColor: '#22223b',
+              padding: '30px',
+              borderRadius: '12px',
+              marginTop: '20px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+            }}>
               <h2 style={{ fontSize: '32px', marginBottom: 10 }}>⏰ Time's up!</h2>
               <p style={{ fontSize: '24px' }}>You're a <strong>{rank.name}</strong></p>
               <p style={{ fontSize: '20px', fontStyle: 'italic' }}>{rank.message}</p>
