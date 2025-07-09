@@ -9,6 +9,7 @@ interface LeaderboardEntry {
   username: string
   taps: number
   tps: number
+  created_at: string
 }
 
 export default function MiniApp() {
@@ -37,39 +38,8 @@ export default function MiniApp() {
 
   useEffect(() => {
     sdk.actions.ready().then(() => setIsReady(true))
+    fetchLeaderboard()
   }, [])
-
-  useEffect(() => {
-    if (gameOver) {
-      const finalTps = rawTapCountRef.current / 15
-      setTps(finalTps)
-
-      setTimeout(() => {
-        let storedName = localStorage.getItem('fc-username')
-
-        if (!storedName) {
-          storedName = prompt(
-            'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits.\n(Tip: enter it correctly, you won’t be able to change it later!)'
-          )?.trim() || ''
-
-          if (storedName) {
-            localStorage.setItem('fc-username', storedName)
-          }
-        }
-
-        if (storedName) {
-          setUsername(storedName)
-          supabase
-            .from('leaderboard')
-            .insert([{ username: storedName, taps: rawTapCountRef.current, tps: finalTps }])
-            .then(({ error }) => {
-              if (error) console.error('Error saving score to Supabase:', error)
-              fetchLeaderboard()
-            })
-        }
-      }, 100)
-    }
-  }, [gameOver])
 
   const fetchLeaderboard = async () => {
     const { data, error } = await supabase
@@ -80,10 +50,51 @@ export default function MiniApp() {
 
     if (!error && data) {
       setLeaderboard(data)
-    } else {
-      console.error('Error loading leaderboard:', error)
     }
   }
+
+  useEffect(() => {
+    if (gameOver) {
+      const finalTps = rawTapCountRef.current / 15
+      setTps(finalTps)
+
+      setTimeout(async () => {
+        let storedName = localStorage.getItem('fc-username')
+        if (!storedName) {
+          storedName = prompt(
+            'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits.\n(Tip: enter it correctly, you won’t be able to change it later!)'
+          )?.trim() || ''
+          if (storedName) {
+            localStorage.setItem('fc-username', storedName)
+          }
+        }
+
+        if (storedName) {
+          setUsername(storedName)
+
+          // Upsert score if new score is higher
+          const { data: existing } = await supabase
+            .from('leaderboard')
+            .select('*')
+            .eq('username', storedName)
+            .order('taps', { ascending: false })
+            .limit(1)
+
+          const currentBest = existing?.[0]
+
+          if (!currentBest || rawTapCountRef.current > currentBest.taps) {
+            await supabase
+              .from('leaderboard')
+              .upsert(
+                [{ username: storedName, taps: rawTapCountRef.current, tps: finalTps }],
+                { onConflict: 'username' }
+              )
+            fetchLeaderboard()
+          }
+        }
+      }, 100)
+    }
+  }, [gameOver])
 
   const startGame = () => {
     rawTapCountRef.current = 0
@@ -106,7 +117,7 @@ export default function MiniApp() {
 
   const handleTap = () => {
     if (!isGameRunning || timeLeft <= 0) return
-    rawTapCountRef.current += 1
+    rawTapCountRef.current++
     setTapCount(prev => prev + 1)
     setAnimate(true)
 
@@ -134,16 +145,9 @@ export default function MiniApp() {
   }
 
   const handleShareScore = async () => {
-    try {
-      const rank = getRank()
-      const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
-⚡️ ${tps.toFixed(1)} TPS | ${rank.name}
-Can you beat my score? 🔥
-👉 Play here: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
-      await sdk.actions.composeCast({ text })
-    } catch (error) {
-      console.error('Error sharing score:', error)
-    }
+    const rank = getRank()
+    const text = `🎮 Just scored ${tapCount} taps in 15 seconds!\n⚡️ ${tps.toFixed(1)} TPS | ${rank.name}\nCan you beat me?\n👉 https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
+    await sdk.actions.composeCast({ text })
   }
 
   useEffect(() => {
@@ -170,29 +174,36 @@ Can you beat my score? 🔥
   const rank = getRank()
 
   return (
-    <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#800080', minHeight: '100vh', color: 'white' }}>
-      <h1 style={{ marginBottom: '30px' }}>🎮 Farcaster Tapping Game</h1>
+    <div style={{ padding: 20, textAlign: 'center', backgroundColor: '#800080', color: 'white', minHeight: '100vh' }}>
+      <h1 style={{ marginBottom: 20 }}>🎮 Farcaster Tapping Game</h1>
 
-      <button
-        onClick={() => setShowLeaderboard(!showLeaderboard)}
-        style={{ marginBottom: 20, padding: '8px 16px', borderRadius: '8px', backgroundColor: '#444', color: 'white', cursor: 'pointer' }}
-      >
-        {showLeaderboard ? '🎮 Back to Game' : '🏆 Leaderboard'}
+      <button onClick={() => setShowLeaderboard(prev => !prev)} style={{
+        marginBottom: 20,
+        backgroundColor: '#444',
+        color: 'white',
+        padding: '10px 20px',
+        borderRadius: 8,
+        cursor: 'pointer',
+        border: 'none'
+      }}>
+        {showLeaderboard ? '🎮 Back to Game' : '🏆 Show Leaderboard'}
       </button>
 
       {showLeaderboard ? (
-        <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'left', backgroundColor: '#222', padding: 20, borderRadius: 10 }}>
-          <h2 style={{ color: '#FFD700' }}>🏆 Top Scores</h2>
+        <div style={{ backgroundColor: '#222', padding: 20, borderRadius: 10, marginBottom: 20 }}>
+          <h2 style={{ marginBottom: 10 }}>🏆 Leaderboard</h2>
           {leaderboard.length === 0 ? (
             <p>No scores yet.</p>
           ) : (
-            leaderboard.map((entry, i) => (
+            leaderboard.map((entry, index) => (
               <div key={entry.id} style={{
-                padding: '10px 0',
-                borderBottom: '1px solid #555',
-                color: entry.username === username ? '#4CAF50' : 'white'
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '8px 0',
+                borderBottom: '1px solid #444'
               }}>
-                <strong>{i + 1}. @{entry.username}</strong> — {entry.taps} taps ({entry.tps.toFixed(1)} TPS)
+                <span>#{index + 1} @{entry.username}</span>
+                <span>{entry.taps} taps ({entry.tps.toFixed(1)} TPS)</span>
               </div>
             ))
           )}
@@ -201,12 +212,17 @@ Can you beat my score? 🔥
         <>
           {!gameOver ? (
             <div>
-              <h2 style={{ fontSize: '24px', marginBottom: 10 }}>⏱️ Time Left: {timeLeft}s</h2>
-              <h2 className={animate ? 'pop' : ''} style={{ fontSize: '48px', margin: '0 0 20px 0' }}>Taps: {tapCount}</h2>
+              <h2>⏱️ Time Left: {timeLeft}s</h2>
+              <h2 className={animate ? 'pop' : ''} style={{ fontSize: '48px' }}>Taps: {tapCount}</h2>
               <button onClick={handleTap} disabled={!isGameRunning} style={{
-                fontSize: '24px', padding: '15px 30px', margin: '10px',
-                backgroundColor: isGameRunning ? '#FFD700' : '#aaa', color: '#000',
-                border: 'none', borderRadius: '10px', cursor: isGameRunning ? 'pointer' : 'not-allowed', fontWeight: 'bold'
+                fontSize: '24px',
+                padding: '15px 30px',
+                backgroundColor: isGameRunning ? '#FFD700' : '#aaa',
+                color: '#000',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: isGameRunning ? 'pointer' : 'not-allowed',
+                fontWeight: 'bold'
               }}>🎯 TAP ME!</button>
               {!isGameRunning && timeLeft === 15 && (
                 <button onClick={startGame} style={{
@@ -220,31 +236,26 @@ Can you beat my score? 🔥
               }}>🔄 Reset</button>
             </div>
           ) : (
-            <div style={{
-              backgroundColor: '#22223b', padding: '30px', borderRadius: '12px',
-              marginTop: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', color: 'white'
-            }}>
-              <h2 style={{ fontSize: '32px', marginBottom: 10 }}>⏰ Time's up!</h2>
-              <p style={{ fontSize: '24px' }}>You're a <strong>{rank.name}</strong></p>
-              <p style={{ fontSize: '20px', fontStyle: 'italic' }}>{rank.message}</p>
-              <p style={{ fontSize: '22px' }}>You tapped <strong>{tapCount}</strong> times with <strong>{tps.toFixed(1)} TPS</strong></p>
+            <div style={{ backgroundColor: '#222', padding: 20, borderRadius: 10, marginTop: 20 }}>
+              <h2>⏰ Time's up!</h2>
+              <p>You are a <strong>{rank.name}</strong></p>
+              <p style={{ fontStyle: 'italic' }}>{rank.message}</p>
+              <p><strong>{tapCount}</strong> taps with <strong>{tps.toFixed(1)} TPS</strong></p>
               <button onClick={startGame} style={{
-                marginTop: '20px', padding: '10px 20px', fontSize: '18px',
-                backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '10px',
-                cursor: 'pointer', fontWeight: 'bold'
+                marginTop: '10px', padding: '10px 20px', backgroundColor: '#4CAF50',
+                color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer'
               }}>🔁 Play Again</button>
               <button onClick={handleShareScore} style={{
-                marginTop: '10px', padding: '12px 24px', fontSize: '16px',
-                backgroundColor: '#8B5CF6', color: 'white', border: 'none',
-                borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold'
+                marginTop: '10px', padding: '10px 20px', backgroundColor: '#8B5CF6',
+                color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer'
               }}>📣 Share Your Score</button>
             </div>
           )}
         </>
       )}
 
-      <p style={{ marginTop: '40px', fontSize: '14px', color: '#eee' }}>
-        Built by <a href="https://farcaster.xyz/vinu07" target="_blank" rel="noopener noreferrer" style={{ color: '#FFD700', textDecoration: 'none' }}>@vinu07</a>
+      <p style={{ marginTop: 40, fontSize: 14 }}>
+        Built by <a href="https://farcaster.xyz/vinu07" target="_blank" style={{ color: '#FFD700' }}>@vinu07</a>
       </p>
 
       <style global jsx>{`
