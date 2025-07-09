@@ -38,7 +38,7 @@ export default function MiniApp() {
       const finalTps = rawTapCountRef.current / 15
       setTps(finalTps)
 
-      setTimeout(() => {
+      setTimeout(async () => {
         let storedName = localStorage.getItem('fc-username')
 
         if (!storedName) {
@@ -53,13 +53,25 @@ export default function MiniApp() {
 
         if (storedName) {
           setUsername(storedName)
-          supabase
+
+          // Check current best
+          const { data, error } = await supabase
             .from('leaderboard')
-            .insert([{ username: storedName, taps: rawTapCountRef.current, tps: finalTps }])
-            .then(({ error }) => {
-              if (error) console.error('Error saving score to Supabase:', error)
-              fetchLeaderboard()
-            })
+            .select('taps')
+            .eq('username', storedName)
+            .order('taps', { ascending: false })
+            .limit(1)
+
+          const bestTaps = data?.[0]?.taps || 0
+          const currentTaps = rawTapCountRef.current
+
+          if (!error && currentTaps > bestTaps) {
+            await supabase
+              .from('leaderboard')
+              .insert([{ username: storedName, taps: currentTaps, tps: finalTps }])
+          }
+
+          fetchLeaderboard()
         }
       }, 100)
     }
@@ -235,8 +247,8 @@ Can you beat my score? 🔥
                 🎯 TAP ME!
               </button>
 
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                {!isGameRunning && timeLeft === 15 && (
+              {!isGameRunning && timeLeft === 15 && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <button
                     onClick={startGame}
                     style={{
@@ -245,7 +257,7 @@ Can you beat my score? 🔥
                       padding: '10px 20px',
                       marginBottom: '10px',
                       backgroundColor: '#00BFFF',
-                      color: '#ffe241',
+                      color: 'white',
                       border: 'none',
                       borderRadius: '10px',
                       cursor: 'pointer'
@@ -253,24 +265,23 @@ Can you beat my score? 🔥
                   >
                     ▶️ Start Game
                   </button>
-                )}
-
-                <button
-                  onClick={handleReset}
-                  style={{
-                    width: '200px',
-                    fontSize: '18px',
-                    padding: '10px 20px',
-                    backgroundColor: '#f44336',
-                    color: '#ffe241',
-                    border: 'none',
-                    borderRadius: '10px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  🔄 Reset
-                </button>
-              </div>
+                  <button
+                    onClick={handleReset}
+                    style={{
+                      width: '200px',
+                      fontSize: '18px',
+                      padding: '10px 20px',
+                      backgroundColor: '#f44336',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '10px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🔄 Reset
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div
@@ -279,8 +290,7 @@ Can you beat my score? 🔥
                 padding: '30px',
                 borderRadius: '12px',
                 marginTop: '20px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                color: '#ffe241'
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
               }}
             >
               <h2 style={{ fontSize: '32px', marginBottom: 10 }}>⏰ Time's up!</h2>
@@ -289,12 +299,12 @@ Can you beat my score? 🔥
               <p style={{ fontSize: '22px' }}>You tapped <strong>{tapCount}</strong> times with <strong>{tps.toFixed(1)} TPS</strong></p>
               <button onClick={startGame} style={{
                 marginTop: '20px', padding: '10px 20px', fontSize: '18px',
-                backgroundColor: '#4CAF50', color: '#ffe241', border: 'none', borderRadius: '10px',
+                backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '10px',
                 cursor: 'pointer', fontWeight: 'bold'
               }}>🔁 Play Again</button>
               <button onClick={handleShareScore} style={{
                 marginTop: '10px', padding: '12px 24px', fontSize: '16px',
-                backgroundColor: '#8B5CF6', color: '#ffe241', border: 'none',
+                backgroundColor: '#8B5CF6', color: 'white', border: 'none',
                 borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold'
               }}>📣 Share Your Score</button>
             </div>
