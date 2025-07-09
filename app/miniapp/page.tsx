@@ -13,9 +13,7 @@ export default function MiniApp() {
   const [tps, setTps] = useState(0)
   const [gameOver, setGameOver] = useState(false)
   const [username, setUsername] = useState('')
-  const [leaderboard, setLeaderboard] = useState<
-    { username: string; taps: number; tps: number }[]
-  >([])
+  const [leaderboard, setLeaderboard] = useState<{ username: string, taps: number, tps: number }[]>([])
   const [showLeaderboard, setShowLeaderboard] = useState(false)
 
   const tapSoundRef = useRef<HTMLAudioElement | null>(null)
@@ -32,23 +30,8 @@ export default function MiniApp() {
 
   useEffect(() => {
     sdk.actions.ready().then(() => setIsReady(true))
-  }, [])
-
-  useEffect(() => {
     fetchLeaderboard()
   }, [])
-
-  const fetchLeaderboard = async () => {
-    const { data, error } = await supabase
-      .from('leaderboard')
-      .select('*')
-      .order('taps', { ascending: false })
-      .limit(10)
-
-    if (!error && data) {
-      setLeaderboard(data)
-    }
-  }
 
   useEffect(() => {
     if (gameOver) {
@@ -60,7 +43,7 @@ export default function MiniApp() {
 
         if (!storedName) {
           storedName = prompt(
-            'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits 😉'
+            'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits.\n(Tip: enter it correctly, you won’t be able to change it later!)'
           )?.trim() || ''
 
           if (storedName) {
@@ -72,21 +55,25 @@ export default function MiniApp() {
           setUsername(storedName)
           supabase
             .from('leaderboard')
-            .upsert([
-              {
-                username: storedName,
-                taps: rawTapCountRef.current,
-                tps: finalTps
-              }
-            ], { onConflict: 'username' })
+            .insert([{ username: storedName, taps: rawTapCountRef.current, tps: finalTps }])
             .then(({ error }) => {
               if (error) console.error('Error saving score to Supabase:', error)
-              else fetchLeaderboard()
+              fetchLeaderboard()
             })
         }
       }, 100)
     }
   }, [gameOver])
+
+  const fetchLeaderboard = async () => {
+    const { data, error } = await supabase
+      .from('leaderboard')
+      .select('username, taps, tps')
+      .order('taps', { ascending: false })
+      .limit(10)
+
+    if (!error && data) setLeaderboard(data)
+  }
 
   const startGame = () => {
     rawTapCountRef.current = 0
@@ -164,7 +151,7 @@ Can you beat my score? 🔥
 
   if (!isReady) {
     return (
-      <div style={{ padding: 20, textAlign: 'center', backgroundColor: '#800080', minHeight: '100vh', color: 'white' }}>
+      <div style={{ padding: 20, textAlign: 'center', backgroundColor: '#800080', minHeight: '100vh', color: '#f8e8ff' }}>
         <h1>🎮 Loading Farcaster Tapping Game...</h1>
       </div>
     )
@@ -173,47 +160,52 @@ Can you beat my score? 🔥
   const rank = getRank()
 
   return (
-    <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#800080', minHeight: '100vh', color: 'white' }}>
+    <div
+      style={{
+        padding: 20,
+        textAlign: 'center',
+        fontFamily: 'Arial, sans-serif',
+        backgroundColor: '#800080',
+        minHeight: '100vh',
+        color: '#f8e8ff'
+      }}
+    >
       <h1 style={{ marginBottom: '30px' }}>🎮 Farcaster Tapping Game</h1>
 
       <button
         onClick={() => setShowLeaderboard(!showLeaderboard)}
         style={{
-          marginBottom: '20px',
-          padding: '10px 20px',
-          backgroundColor: '#4B0082',
-          color: 'white',
-          border: 'none',
+          margin: '10px 0',
+          padding: '8px 16px',
           borderRadius: '8px',
-          cursor: 'pointer',
-          fontSize: '16px'
+          backgroundColor: '#333',
+          color: '#f8e8ff',
+          cursor: 'pointer'
         }}
       >
-        {showLeaderboard ? '🎮 Back to Game' : '🏆 Show Leaderboard'}
+        {showLeaderboard ? '🎮 Back to Game' : '🏆 Leaderboard'}
       </button>
 
       {showLeaderboard ? (
-        <div style={{
-          backgroundColor: '#3d3d5c',
-          padding: '20px',
-          borderRadius: '12px',
-          maxWidth: '400px',
-          margin: '0 auto'
-        }}>
-          <h2 style={{ marginBottom: '15px' }}>🏆 Leaderboard</h2>
+        <div style={{ marginTop: 20 }}>
+          <h2>🏆 Leaderboard</h2>
           {leaderboard.length === 0 ? (
             <p>No scores yet.</p>
           ) : (
             leaderboard.map((entry, i) => (
-              <div key={i} style={{
-                marginBottom: '10px',
-                backgroundColor: '#2a2a40',
-                padding: '10px',
-                borderRadius: '8px',
-                border: '1px solid #666'
-              }}>
-                <strong>#{i + 1} @{entry.username}</strong><br />
-                <span>{entry.taps} taps | {entry.tps.toFixed(1)} TPS</span>
+              <div
+                key={`${entry.username}-${i}`}
+                style={{
+                  margin: '8px auto',
+                  padding: '10px',
+                  maxWidth: '320px',
+                  borderRadius: '8px',
+                  backgroundColor: '#222',
+                  border: '1px solid #555'
+                }}
+              >
+                <strong>{i + 1}. @{entry.username}</strong>
+                <div>{entry.taps} taps ({entry.tps.toFixed(1)} TPS)</div>
               </div>
             ))
           )}
@@ -222,41 +214,73 @@ Can you beat my score? 🔥
         <>
           {!gameOver ? (
             <div>
-              <h2>⏱️ Time Left: {timeLeft}s</h2>
-              <h2 className={animate ? 'pop' : ''} style={{ fontSize: '48px' }}>Taps: {tapCount}</h2>
-              <button onClick={handleTap} disabled={!isGameRunning} style={{
-                fontSize: '24px', padding: '15px 30px',
-                backgroundColor: isGameRunning ? '#FFD700' : '#aaa', color: '#000',
-                border: 'none', borderRadius: '10px', cursor: isGameRunning ? 'pointer' : 'not-allowed', fontWeight: 'bold'
-              }}>🎯 TAP ME!</button>
+              <h2 style={{ fontSize: '24px', marginBottom: 10 }}>⏱️ Time Left: {timeLeft}s</h2>
+              <h2 className={animate ? 'pop' : ''} style={{ fontSize: '48px', marginBottom: 20 }}>Taps: {tapCount}</h2>
+
+              <button
+                onClick={handleTap}
+                disabled={!isGameRunning}
+                style={{
+                  fontSize: '24px',
+                  padding: '15px 30px',
+                  backgroundColor: isGameRunning ? '#FFD700' : '#aaa',
+                  color: '#000',
+                  border: 'none',
+                  borderRadius: '10px',
+                  cursor: isGameRunning ? 'pointer' : 'not-allowed',
+                  fontWeight: 'bold',
+                  marginBottom: '20px'
+                }}
+              >
+                🎯 TAP ME!
+              </button>
+
               {!isGameRunning && timeLeft === 15 && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginTop: '20px' }}>
-                  <button onClick={startGame} style={{
-                    fontSize: '18px',
-                    padding: '12px 24px',
-                    backgroundColor: '#00BFFF',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '10px',
-                    cursor: 'pointer'
-                  }}>▶️ Start Game</button>
-                  <button onClick={handleReset} style={{
-                    fontSize: '18px',
-                    padding: '12px 24px',
-                    backgroundColor: '#f44336',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '10px',
-                    cursor: 'pointer'
-                  }}>🔄 Reset</button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <button
+                    onClick={startGame}
+                    style={{
+                      width: '200px',
+                      fontSize: '18px',
+                      padding: '10px 20px',
+                      marginBottom: '10px',
+                      backgroundColor: '#00BFFF',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '10px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ▶️ Start Game
+                  </button>
+                  <button
+                    onClick={handleReset}
+                    style={{
+                      width: '200px',
+                      fontSize: '18px',
+                      padding: '10px 20px',
+                      backgroundColor: '#f44336',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '10px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🔄 Reset
+                  </button>
                 </div>
               )}
             </div>
           ) : (
-            <div style={{
-              backgroundColor: '#22223b', padding: '30px', borderRadius: '12px',
-              marginTop: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', color: 'white'
-            }}>
+            <div
+              style={{
+                backgroundColor: '#22223b',
+                padding: '30px',
+                borderRadius: '12px',
+                marginTop: '20px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+              }}
+            >
               <h2 style={{ fontSize: '32px', marginBottom: 10 }}>⏰ Time's up!</h2>
               <p style={{ fontSize: '24px' }}>You're a <strong>{rank.name}</strong></p>
               <p style={{ fontSize: '20px', fontStyle: 'italic' }}>{rank.message}</p>
@@ -276,7 +300,7 @@ Can you beat my score? 🔥
         </>
       )}
 
-      <p style={{ marginTop: '40px', fontSize: '14px', color: '#eee' }}>
+      <p style={{ marginTop: '40px', fontSize: '14px', color: '#f8e8ff' }}>
         Built by <a href="https://farcaster.xyz/vinu07" target="_blank" rel="noopener noreferrer" style={{ color: '#FFD700', textDecoration: 'none' }}>@vinu07</a>
       </p>
 
