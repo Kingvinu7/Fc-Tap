@@ -64,19 +64,24 @@ export default function MiniApp() {
 
           const isPersonalBest = !previous?.length || rawTapCountRef.current > previous[0].taps
 
-          await supabase.from('leaderboard').insert([
-            { username: storedName, taps: rawTapCountRef.current, tps: finalTps }
-          ])
-
-          fetchLeaderboard()
-
           if (isPersonalBest) {
+            await supabase
+              .from('leaderboard')
+              .delete()
+              .eq('username', storedName)
+
+            await supabase.from('leaderboard').insert([
+              { username: storedName, taps: rawTapCountRef.current, tps: finalTps }
+            ])
+
             confetti({
               particleCount: 150,
               spread: 70,
               origin: { y: 0.6 },
               colors: ['#ffcc00', '#ff66cc', '#66ccff', '#99ff99']
             })
+
+            fetchLeaderboard()
           }
         }
       }, 100)
@@ -244,8 +249,8 @@ Can you beat my score? 🔥
                 🎯 TAP ME!
               </button>
 
-              {!isGameRunning && timeLeft === 15 && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                {!isGameRunning && timeLeft === 15 && (
                   <button
                     onClick={startGame}
                     style={{
@@ -262,23 +267,23 @@ Can you beat my score? 🔥
                   >
                     ▶️ Start Game
                   </button>
-                  <button
-                    onClick={handleReset}
-                    style={{
-                      width: '200px',
-                      fontSize: '18px',
-                      padding: '10px 20px',
-                      backgroundColor: '#f44336',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '10px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    🔄 Reset
-                  </button>
-                </div>
-              )}
+                )}
+                <button
+                  onClick={handleReset}
+                  style={{
+                    width: '200px',
+                    fontSize: '18px',
+                    padding: '10px 20px',
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '10px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔄 Reset
+                </button>
+              </div>
             </div>
           ) : (
             <div
