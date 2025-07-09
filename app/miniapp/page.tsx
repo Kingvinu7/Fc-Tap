@@ -37,16 +37,22 @@ export default function MiniApp() {
       const finalTps = rawTapCountRef.current / 15
       setTps(finalTps)
 
-      setTimeout(() => {
-        const inputName = prompt('Enter your username for the leaderboard:')
-        if (inputName && inputName.trim()) {
-          const trimmed = inputName.trim()
-          setUsername(trimmed)
-          supabase.from('leaderboard').insert([{ username: trimmed, taps: rawTapCountRef.current, tps: finalTps }]).then(({ error }) => {
+      const save = async () => {
+        try {
+          const user = await sdk.user.getUser()
+          if (user?.username) {
+            setUsername(user.username)
+            const { error } = await supabase.from('leaderboard').insert([
+              { username: user.username, taps: rawTapCountRef.current, tps: finalTps }
+            ])
             if (error) console.error('Error saving score to Supabase:', error)
-          })
+          }
+        } catch (err) {
+          console.error('Failed to get Farcaster user:', err)
         }
-      }, 100)
+      }
+
+      save()
     }
   }, [gameOver])
 
