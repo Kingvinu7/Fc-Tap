@@ -12,7 +12,6 @@ export default function MiniApp() {
   const [timeLeft, setTimeLeft] = useState(15)
   const [tps, setTps] = useState(0)
   const [gameOver, setGameOver] = useState(false)
-  const [username, setUsername] = useState('')
 
   const tapSoundRef = useRef<HTMLAudioElement | null>(null)
   const resetSoundRef = useRef<HTMLAudioElement | null>(null)
@@ -27,9 +26,7 @@ export default function MiniApp() {
   }, [])
 
   useEffect(() => {
-    sdk.actions.ready().then(() => {
-      setIsReady(true)
-    })
+    sdk.actions.ready().then(() => setIsReady(true))
   }, [])
 
   useEffect(() => {
@@ -37,22 +34,24 @@ export default function MiniApp() {
       const finalTps = rawTapCountRef.current / 15
       setTps(finalTps)
 
-      const save = async () => {
+      const saveScore = async () => {
         try {
-          const profile = await sdk.actions.viewProfile()
-          if (profile?.username) {
-            setUsername(profile.username)
-            const { error } = await supabase.from('leaderboard').insert([
-              { username: profile.username, taps: rawTapCountRef.current, tps: finalTps }
-            ])
-            if (error) console.error('Error saving score to Supabase:', error)
+          const user = await sdk.getUser()
+          if (user?.fid) {
+            const profile = await sdk.actions.viewProfile(user.fid)
+            if (profile?.username) {
+              const { error } = await supabase
+                .from('leaderboard')
+                .insert([{ username: profile.username, taps: rawTapCountRef.current, tps: finalTps }])
+              if (error) console.error('Supabase error:', error)
+            }
           }
         } catch (err) {
-          console.error('Failed to fetch user profile:', err)
+          console.error('Error saving score:', err)
         }
       }
 
-      save()
+      saveScore()
     }
   }, [gameOver])
 
@@ -109,10 +108,7 @@ export default function MiniApp() {
   const handleShareScore = async () => {
     try {
       const rank = getRank()
-      const text = `🎮 Just scored ${tapCount} taps in 15 seconds! 
-⚡️ ${tps.toFixed(1)} TPS | ${rank.name}
-Can you beat my score? 🔥
-👉 Play here: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
+      const text = `🎮 Just scored ${tapCount} taps in 15 seconds!\n⚡️ ${tps.toFixed(1)} TPS | ${rank.name}\nCan you beat my score? 🔥\n👉 Play here: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
       await sdk.actions.composeCast({ text })
     } catch (error) {
       console.error('Error sharing score:', error)
@@ -204,4 +200,4 @@ Can you beat my score? 🔥
       `}</style>
     </div>
   )
-}
+      }
