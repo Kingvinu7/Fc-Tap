@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import confetti from 'canvas-confetti'
 import { sdk } from '@farcaster/miniapp-sdk'
 import { supabase } from '@/lib/supabaseClient'
 
@@ -54,24 +55,29 @@ export default function MiniApp() {
         if (storedName) {
           setUsername(storedName)
 
-          // Check current best
-          const { data, error } = await supabase
+          const { data: previous } = await supabase
             .from('leaderboard')
             .select('taps')
             .eq('username', storedName)
             .order('taps', { ascending: false })
             .limit(1)
 
-          const bestTaps = data?.[0]?.taps || 0
-          const currentTaps = rawTapCountRef.current
+          const isPersonalBest = !previous?.length || rawTapCountRef.current > previous[0].taps
 
-          if (!error && currentTaps > bestTaps) {
-            await supabase
-              .from('leaderboard')
-              .insert([{ username: storedName, taps: currentTaps, tps: finalTps }])
-          }
+          await supabase.from('leaderboard').insert([
+            { username: storedName, taps: rawTapCountRef.current, tps: finalTps }
+          ])
 
           fetchLeaderboard()
+
+          if (isPersonalBest) {
+            confetti({
+              particleCount: 150,
+              spread: 70,
+              origin: { y: 0.6 },
+              colors: ['#ffcc00', '#ff66cc', '#66ccff', '#99ff99']
+            })
+          }
         }
       }, 100)
     }
@@ -161,6 +167,8 @@ Can you beat my score? 🔥
     }
   }, [])
 
+  const rank = getRank()
+
   if (!isReady) {
     return (
       <div style={{ padding: 20, textAlign: 'center', backgroundColor: '#800080', minHeight: '100vh', color: '#ffe241' }}>
@@ -169,19 +177,8 @@ Can you beat my score? 🔥
     )
   }
 
-  const rank = getRank()
-
   return (
-    <div
-      style={{
-        padding: 20,
-        textAlign: 'center',
-        fontFamily: 'Arial, sans-serif',
-        backgroundColor: '#800080',
-        minHeight: '100vh',
-        color: '#ffe241'
-      }}
-    >
+    <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#800080', minHeight: '100vh', color: '#ffe241' }}>
       <h1 style={{ marginBottom: '30px' }}>🎮 Farcaster Tapping Game</h1>
 
       <button
