@@ -27,9 +27,7 @@ export default function MiniApp() {
   }, [])
 
   useEffect(() => {
-    sdk.actions.ready().then(() => {
-      setIsReady(true)
-    })
+    sdk.actions.ready().then(() => setIsReady(true))
   }, [])
 
   useEffect(() => {
@@ -38,13 +36,26 @@ export default function MiniApp() {
       setTps(finalTps)
 
       setTimeout(() => {
-        const inputName = prompt('Enter your username for the leaderboard:')
-        if (inputName && inputName.trim()) {
-          const trimmed = inputName.trim()
-          setUsername(trimmed)
-          supabase.from('leaderboard').insert([{ username: trimmed, taps: rawTapCountRef.current, tps: finalTps }]).then(({ error }) => {
-            if (error) console.error('Error saving score to Supabase:', error)
-          })
+        let storedName = localStorage.getItem('fc-username')
+
+        if (!storedName) {
+          storedName = prompt(
+            'Fc Taps Game says:\n\nEnter your correct Farcaster username for some benefits 😉'
+          )?.trim() || ''
+
+          if (storedName) {
+            localStorage.setItem('fc-username', storedName)
+          }
+        }
+
+        if (storedName) {
+          setUsername(storedName)
+          supabase
+            .from('leaderboard')
+            .insert([{ username: storedName, taps: rawTapCountRef.current, tps: finalTps }])
+            .then(({ error }) => {
+              if (error) console.error('Error saving score to Supabase:', error)
+            })
         }
       }, 100)
     }
@@ -58,7 +69,7 @@ export default function MiniApp() {
     setGameOver(false)
 
     timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
+      setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timerRef.current!)
           setIsGameRunning(false)
@@ -72,13 +83,11 @@ export default function MiniApp() {
   const handleTap = () => {
     if (!isGameRunning || timeLeft <= 0) return
     rawTapCountRef.current += 1
-    setTapCount((prev) => prev + 1)
+    setTapCount(prev => prev + 1)
     setAnimate(true)
 
-    if (tapSoundRef.current) {
-      const clone = tapSoundRef.current.cloneNode() as HTMLAudioElement
-      clone.play().catch(() => {})
-    }
+    const clone = tapSoundRef.current?.cloneNode() as HTMLAudioElement
+    clone?.play().catch(() => {})
   }
 
   const handleReset = () => {
@@ -88,7 +97,7 @@ export default function MiniApp() {
     setIsGameRunning(false)
     setGameOver(false)
     setTimeLeft(15)
-    if (timerRef.current) clearInterval(timerRef.current)
+    clearInterval(timerRef.current!)
     resetSoundRef.current?.play().catch(() => {})
   }
 
@@ -103,7 +112,7 @@ export default function MiniApp() {
   const handleShareScore = async () => {
     try {
       const rank = getRank()
-      const text = `🎮 Just scored ${tapCount} taps in 15 seconds! 
+      const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
 ⚡️ ${tps.toFixed(1)} TPS | ${rank.name}
 Can you beat my score? 🔥
 👉 Play here: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
