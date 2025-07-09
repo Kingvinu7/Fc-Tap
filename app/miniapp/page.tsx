@@ -37,21 +37,18 @@ export default function MiniApp() {
       const finalTps = rawTapCountRef.current / 15
       setTps(finalTps)
 
-      // Prompt for username and submit to Supabase
-      const inputName = prompt('Enter your username for the leaderboard:')
-      if (inputName && inputName.trim()) {
-        setUsername(inputName.trim())
-        saveScore(inputName.trim(), rawTapCountRef.current, finalTps)
-      }
+      setTimeout(() => {
+        const inputName = prompt('Enter your username for the leaderboard:')
+        if (inputName && inputName.trim()) {
+          const trimmed = inputName.trim()
+          setUsername(trimmed)
+          supabase.from('leaderboard').insert([{ username: trimmed, taps: rawTapCountRef.current, tps: finalTps }]).then(({ error }) => {
+            if (error) console.error('Error saving score to Supabase:', error)
+          })
+        }
+      }, 100)
     }
   }, [gameOver])
-
-  const saveScore = async (name: string, taps: number, tps: number) => {
-    const { error } = await supabase.from('leaderboard').insert([{ username: name, taps, tps }])
-    if (error) {
-      console.error('Error saving score to Supabase:', error)
-    }
-  }
 
   const startGame = () => {
     rawTapCountRef.current = 0
