@@ -1,0 +1,21 @@
+name: Install Supabase Client
+
+on:
+  push:
+    paths:
+      - '**/lib/supabaseClient.ts'
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Supabase JS
+        run: npm install @supabase/supabase-js
+      - name: Commit package-lock
+        run: |
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add package*.json
+          git commit -m "Install Supabase JS" || echo "No changes"
+          git push
