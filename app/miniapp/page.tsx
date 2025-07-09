@@ -39,16 +39,16 @@ export default function MiniApp() {
 
       const save = async () => {
         try {
-          const user = await sdk.user.getUser()
-          if (user?.username) {
-            setUsername(user.username)
+          const profile = await sdk.actions.viewProfile()
+          if (profile?.username) {
+            setUsername(profile.username)
             const { error } = await supabase.from('leaderboard').insert([
-              { username: user.username, taps: rawTapCountRef.current, tps: finalTps }
+              { username: profile.username, taps: rawTapCountRef.current, tps: finalTps }
             ])
             if (error) console.error('Error saving score to Supabase:', error)
           }
         } catch (err) {
-          console.error('Failed to get Farcaster user:', err)
+          console.error('Failed to fetch user profile:', err)
         }
       }
 
