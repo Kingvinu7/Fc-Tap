@@ -249,14 +249,35 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game\u200B
   }
 
   return (
-    <div style={{ 
-      padding: 20, 
-      textAlign: 'center', 
-      backgroundColor: '#800080', 
-      minHeight: '100vh', 
-      color: '#ffe241',
-      ...fontStyles.vtText
-    }}>
+  <div
+    style={{
+      backgroundImage: "url('/retropxbg.png')",
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      minHeight: '100vh',
+      position: 'relative',
+      fontFamily: 'VT323, monospace'
+    }}
+  >
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.55)',
+        zIndex: 0
+      }}
+    />
+
+    <div
+      style={{
+        position: 'relative',
+        zIndex: 1,
+        padding: 20,
+        textAlign: 'center',
+        color: '#ffe241'
+      }}
+    >
       <h1 style={{ 
         ...fontStyles.gameTitle,
         fontSize: '2rem', 
@@ -525,7 +546,9 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game\u200B
             @vinu07
           </a>
         </p>
-      </div>
-    </div>
+      </div> {/* inner content */}
+    </div> {/* background wrapper */}
+  )
+    
   )
 }
