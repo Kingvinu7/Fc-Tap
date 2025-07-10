@@ -40,7 +40,29 @@ export default function MiniApp() {
 
     fetchLeaderboard()
   })
-}, [])
+}, []) 
+  
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      try {
+        const hasBeenPrompted = localStorage.getItem('add-app-prompted')
+        if (!hasBeenPrompted) {
+          await sdk.actions.addMiniApp()
+          localStorage.setItem('add-app-prompted', 'true')
+          console.log('App successfully added!')
+        }
+      } catch (error) {
+        if (error.name === 'RejectedByUser') {
+          console.log('User declined to add the app')
+          localStorage.setItem('add-app-prompted', 'true')
+        } else if (error.name === 'InvalidDomainManifestJson') {
+          console.error('Invalid farcaster.json configuration')
+        }
+      }
+    }, 2000) // 2 seconds after component mounts
+
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     if (gameOver) {
