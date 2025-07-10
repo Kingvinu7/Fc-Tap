@@ -192,8 +192,8 @@ export default function MiniApp() {
       const rank = getRank()
       const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
 ⚡️ ${tps.toFixed(1)} TPS | ${rank.name}
-Can you beat my score? 🔥
-👉 Play here: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
+How is it ? 🔥
+👉 Try beating me: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
       await sdk.actions.composeCast({ text })
     } catch (error) {
       console.error('Error sharing score:', error)
@@ -325,7 +325,7 @@ Can you beat my score? 🔥
           <button
             onClick={handleTap}
             style={{
-              fontSize: '4rem',
+              fontSize: '3rem',
               width: '200px',
               height: '200px',
               backgroundColor: animate ? '#ff66cc' : '#ffe241',
