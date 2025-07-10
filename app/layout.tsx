@@ -5,7 +5,7 @@ import { headers } from 'next/headers'
 export async function generateMetadata(): Promise<Metadata> {
   const host = headers().get('host') || 'localhost:3000'
   const protocol = host.startsWith('localhost') ? 'http' : 'https'
-  const baseUrl = ${protocol}://${host}
+  const baseUrl = `${protocol}://${host}`
 
   return {
     title: 'FC Tap Game',
@@ -25,10 +25,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     other: {
       'fc:frame': 'vNext',
-      'fc:frame:image': ${baseUrl}/og.png,
+      'fc:frame:image': `${baseUrl}/og.png`,
       'fc:frame:button:1': 'Start tapping now',
       'fc:frame:button:1:action': 'post',
-      'fc:frame:button:1:target': ${baseUrl}/api/frames,
+      'fc:frame:button:1:target': `${baseUrl}/api/frames`,
     },
   }
 }
