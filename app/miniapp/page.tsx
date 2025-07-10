@@ -49,15 +49,11 @@ export default function MiniApp() {
         if (!hasBeenPrompted) {
           await sdk.actions.addMiniApp()
           localStorage.setItem('add-app-prompted', 'true')
-          console.log('App successfully added!')
         }
       } catch (err) {
         const error = err as { name?: string }
         if (error.name === 'RejectedByUser') {
-          console.log('User declined to add the app')
           localStorage.setItem('add-app-prompted', 'true')
-        } else if (error.name === 'InvalidDomainManifestJson') {
-          console.error('Invalid farcaster.json configuration')
         }
       }
     }, 2000)
@@ -215,7 +211,6 @@ Can you beat my score? 🔥
 
   return (
     <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#800080', minHeight: '100vh', color: '#ffe241' }}>
-      {/* ... UI unchanged ... */}
     </div>
   )
 }
