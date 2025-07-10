@@ -21,6 +21,8 @@ export default function MiniApp() {
   const resetSoundRef = useRef<HTMLAudioElement | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const rawTapCountRef = useRef(0)
+  const audioPoolRef = useRef<HTMLAudioElement[]>([])
+  const audioIndexRef = useRef(0)
 
   // Font styles
   const fontStyles = {
@@ -30,10 +32,21 @@ export default function MiniApp() {
   }
 
   useEffect(() => {
-    tapSoundRef.current = new Audio('/tap.mp3')
-    tapSoundRef.current.load()
-    resetSoundRef.current = new Audio('/reset.mp3')
-    resetSoundRef.current.load()
+    if (typeof window !== 'undefined') {
+      // Create audio pool for tap sounds (multiple instances for overlapping)
+      audioPoolRef.current = []
+      for (let i = 0; i < 10; i++) {
+        const audio = new Audio('/tap.mp3')
+        audio.preload = 'auto'
+        audio.volume = 0.3 // Prevent audio distortion at high speeds
+        audioPoolRef.current.push(audio)
+      }
+      
+      // Single reset sound
+      resetSoundRef.current = new Audio('/reset.mp3')
+      resetSoundRef.current.preload = 'auto'
+      resetSoundRef.current.volume = 0.5
+    }
   }, [])
 
   useEffect(() => {
@@ -41,8 +54,11 @@ export default function MiniApp() {
       setIsReady(true)
 
       if (typeof window !== 'undefined' && window?.location?.hash === '#reset-user') {
-        localStorage.removeItem('fc-username')
-        alert('✅ Username reset! You will be asked to enter a new one after your next game.')
+        const storedUsername = localStorage.getItem('fc-username')
+        if (storedUsername) {
+          localStorage.removeItem('fc-username')
+          alert('✅ Username reset! You will be asked to enter a new one after your next game.')
+        }
       }
 
       fetchLeaderboard()
@@ -88,6 +104,22 @@ export default function MiniApp() {
     }
   }
 
+  const fetchLeaderboard = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('leaderboard')
+        .select('username, taps, tps')
+        .order('taps', { ascending: false })
+        .limit(10)
+
+      if (!error && data) {
+        setLeaderboard(data)
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error)
+    }
+  }
+
   useEffect(() => {
     if (gameOver) {
       const finalTps = rawTapCountRef.current / 15
@@ -113,50 +145,44 @@ export default function MiniApp() {
         if (storedName) {
           setUsername(storedName)
 
-          const { data: previous } = await supabase
-            .from('leaderboard')
-            .select('taps')
-            .eq('username', storedName)
-            .order('taps', { ascending: false })
-            .limit(1)
-
-          const isPersonalBest = !previous?.length || rawTapCountRef.current > previous[0].taps
-
-          // Only update leaderboard if it's a personal best
-          if (isPersonalBest) {
-            await supabase
+          try {
+            const { data: previous } = await supabase
               .from('leaderboard')
-              .delete()
+              .select('taps')
               .eq('username', storedName)
+              .order('taps', { ascending: false })
+              .limit(1)
 
-            await supabase.from('leaderboard').insert([
-              { username: storedName, taps: rawTapCountRef.current, tps: finalTps }
-            ])
+            const isPersonalBest = !previous?.length || rawTapCountRef.current > previous[0].taps
 
-            confetti({
-              particleCount: 150,
-              spread: 70,
-              origin: { y: 0.6 },
-              colors: ['#ffcc00', '#ff66cc', '#66ccff', '#99ff99']
-            })
+            // Only update leaderboard if it's a personal best
+            if (isPersonalBest) {
+              await supabase
+                .from('leaderboard')
+                .delete()
+                .eq('username', storedName)
+
+              await supabase.from('leaderboard').insert([
+                { username: storedName, taps: rawTapCountRef.current, tps: finalTps }
+              ])
+
+              confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ffcc00', '#ff66cc', '#66ccff', '#99ff99']
+              })
+            }
+
+            // Always refresh leaderboard to show current data
+            fetchLeaderboard()
+          } catch (error) {
+            console.error('Error updating leaderboard:', error)
           }
-
-          // Always refresh leaderboard to show current data
-          fetchLeaderboard()
         }
       }, 100)
     }
   }, [gameOver])
-
-  const fetchLeaderboard = async () => {
-    const { data, error } = await supabase
-      .from('leaderboard')
-      .select('username, taps, tps')
-      .order('taps', { ascending: false })
-      .limit(10)
-
-    if (!error && data) setLeaderboard(data)
-  }
 
   const startGame = () => {
     rawTapCountRef.current = 0
@@ -168,7 +194,9 @@ export default function MiniApp() {
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          clearInterval(timerRef.current!)
+          if (timerRef.current) {
+            clearInterval(timerRef.current)
+          }
           setIsGameRunning(false)
           setGameOver(true)
         }
@@ -183,8 +211,15 @@ export default function MiniApp() {
     setTapCount(prev => prev + 1)
     setAnimate(true)
 
-    const clone = tapSoundRef.current?.cloneNode() as HTMLAudioElement
-    clone?.play().catch(() => {})
+    // Use audio pool for overlapping sounds
+    if (audioPoolRef.current.length > 0) {
+      const audio = audioPoolRef.current[audioIndexRef.current]
+      audio.currentTime = 0
+      audio.play().catch(() => {})
+      
+      // Cycle through audio pool
+      audioIndexRef.current = (audioIndexRef.current + 1) % audioPoolRef.current.length
+    }
   }
 
   const handleReset = () => {
@@ -194,7 +229,9 @@ export default function MiniApp() {
     setIsGameRunning(false)
     setGameOver(false)
     setTimeLeft(15)
-    clearInterval(timerRef.current!)
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+    }
     resetSoundRef.current?.play().catch(() => {})
   }
 
@@ -207,15 +244,14 @@ export default function MiniApp() {
   }
 
   const handleShareScore = async () => {
-  try {
-    const rank = getRank()
-    const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
-    👉 Try beating me:
-    https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game\u200B`
-    await sdk.actions.composeCast({ text })
-  } catch (error) {
-    console.error('Error sharing score:', error)
-  }
+    try {
+      const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
+👉 Try beating me:
+https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
+      await sdk.actions.composeCast({ text })
+    } catch (error) {
+      console.error('Error sharing score:', error)
+    }
   }
 
   useEffect(() => {
@@ -227,7 +263,9 @@ export default function MiniApp() {
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
     }
   }, [])
 
@@ -491,66 +529,70 @@ export default function MiniApp() {
             ) : (
               <div>
                 {leaderboard.map((entry, index) => {
-  const rankColor =
-    index === 0 ? '#FFD700' : // Gold
-    index === 1 ? '#C0C0C0' : // Silver
-    index === 2 ? '#CD7F32' : // Bronze
-    '#ffe241';               // Default
+                  const rankColor =
+                    index === 0 ? '#FFD700' : // Gold
+                    index === 1 ? '#C0C0C0' : // Silver
+                    index === 2 ? '#CD7F32' : // Bronze
+                    '#ffe241';               // Default
 
-  return (
-    <div
-      key={index}
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '10px',
-        marginBottom: '8px',
-        backgroundColor: index < 3 ? 'rgba(255, 204, 0, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-        borderRadius: '8px',
-        fontSize: '1.2rem',
-        color: rankColor
-      }}
-    >
-      <div>
-        <span style={{ fontWeight: 'bold' }}>
-          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
-        </span>
-        <span style={{ marginLeft: '10px' }}>{entry.username}</span>
-      </div>
-      <div>
-        <span style={{ fontWeight: 'bold' }}>{entry.taps}</span>
-        <span style={{ marginLeft: '10px', fontSize: '1rem', opacity: 0.8 }}>
-          ({entry.tps.toFixed(1)} TPS)
-        </span>
-      </div>
-    </div>
-  )
-})}
-        <div style={{ marginTop: '40px', fontSize: '1.1rem', opacity: 0.8 }}>
-          <p>Tap as fast as you can in 15 seconds!</p>
-          <p>TPS = Taps Per Second</p>
-          <p style={{ 
-            ...fontStyles.normalText,
-            marginTop: '10px', 
-            color: '#99ff99',
-            fontSize: '0.9rem'
-          }}>
-            Built by{' '}
-            <a 
-              href="https://farcaster.xyz/vinu07" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{ 
-                color: '#99ff99', 
-                textDecoration: 'underline',
-                fontWeight: 'bold'
-              }}
-            >
-              @vinu07
-            </a>
-          </p>
-        </div>
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '10px',
+                        marginBottom: '8px',
+                        backgroundColor: index < 3 ? 'rgba(255, 204, 0, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '8px',
+                        fontSize: '1.2rem',
+                        color: rankColor
+                      }}
+                    >
+                      <div>
+                        <span style={{ fontWeight: 'bold' }}>
+                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
+                        </span>
+                        <span style={{ marginLeft: '10px' }}>{entry.username}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontWeight: 'bold' }}>{entry.taps}</span>
+                        <span style={{ marginLeft: '10px', fontSize: '1rem', opacity: 0.8 }}>
+                          ({entry.tps.toFixed(1)} TPS)
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            <div style={{ marginTop: '40px', fontSize: '1.1rem', opacity: 0.8 }}>
+              <p>Tap as fast as you can in 15 seconds!</p>
+              <p>TPS = Taps Per Second</p>
+              <p style={{ 
+                ...fontStyles.normalText,
+                marginTop: '10px', 
+                color: '#99ff99',
+                fontSize: '0.9rem'
+              }}>
+                Built by{' '}
+                <a 
+                  href="https://farcaster.xyz/vinu07" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ 
+                    color: '#99ff99', 
+                    textDecoration: 'underline',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  @vinu07
+                </a>
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
