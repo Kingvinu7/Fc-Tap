@@ -457,25 +457,24 @@ How is it ? 🔥
         </div>
       )}
 
-      <div style={{ marginTop: '40px', fontSize: '0.9rem', opacity: 0.8 }}>
-        <p>Tap as fast as you can in 15 seconds!</p>
-        <p>TPS = Taps Per Second</p>
-        <p style={{ marginTop: '10px', color: '#99ff99' }}>
-          Built by{' '}
-          <a 
-            href="https://farcaster.xyz/vinu07" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{ 
-              color: '#99ff99', 
-              textDecoration: 'underline',
-              fontWeight: 'bold'
-            }}
-          >
-            @vinu07
-          </a>
-        </p>
-      </div>
-    </div>
+      <div className="footer-text" style={{ marginTop: '40px', fontSize: '0.9rem', opacity: 0.8 }}>
+  <p>Tap as fast as you can in 15 seconds!</p>
+  <p>TPS = Taps Per Second</p>
+  <p style={{ marginTop: '10px', color: '#99ff99' }}>
+    Built by{' '}
+    <a 
+      href="https://farcaster.xyz/vinu07" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      style={{ 
+        color: '#99ff99', 
+        textDecoration: 'underline',
+        fontWeight: 'bold'
+      }}
+    >
+      @vinu07
+     </a>
+    </p>
+   </div>
   )
 }
