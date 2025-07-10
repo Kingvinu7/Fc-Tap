@@ -23,17 +23,13 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       ],
     },
+    // Remove the conflicting frame metadata, keep only miniapp
     other: {
-      'fc:frame': 'vNext',
-      'fc:frame:image': `${baseUrl}/og.png`,
-      'fc:frame:button:1': 'Start tapping now',
-      'fc:frame:button:1:action': 'post',
-      'fc:frame:button:1:target': `${baseUrl}/api/frames`,
+      'fc:miniapp': 'true',
     },
   }
 }
 
-// ✅ MAKE THIS ASYNC
 export default async function RootLayout({
   children,
 }: {
@@ -43,6 +39,23 @@ export default async function RootLayout({
     <html lang="en">
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap" rel="stylesheet" />
+        {/* Add miniapp metadata here */}
+        <script
+          type="application/json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              version: "next",
+              imageUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fc-taps.vercel.app'}/og.png`,
+              button: {
+                title: "Start tapping now",
+                action: {
+                  type: "launch_miniapp",
+                  url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fc-taps.vercel.app'}/miniapp`
+                }
+              }
+            })
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>
