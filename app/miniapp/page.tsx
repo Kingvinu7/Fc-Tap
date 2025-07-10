@@ -30,9 +30,17 @@ export default function MiniApp() {
   }, [])
 
   useEffect(() => {
-    sdk.actions.ready().then(() => setIsReady(true))
+  sdk.actions.ready().then(() => {
+    setIsReady(true)
+
+    if (window?.location?.hash === '#reset-user') {
+      localStorage.removeItem('fc-username')
+      alert('✅ Username reset! You will be asked to enter a new one after your next game.')
+    }
+
     fetchLeaderboard()
-  }, [])
+  })
+}, [])
 
   useEffect(() => {
     if (gameOver) {
