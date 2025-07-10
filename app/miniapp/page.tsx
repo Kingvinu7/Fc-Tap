@@ -210,7 +210,6 @@ export default function MiniApp() {
     try {
       const rank = getRank()
       const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
-⚡️ ${tps.toFixed(1)} TPS |
 👉 Try beating me: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
       await sdk.actions.composeCast({ text })
     } catch (error) {
