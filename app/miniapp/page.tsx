@@ -22,6 +22,13 @@ export default function MiniApp() {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const rawTapCountRef = useRef(0)
 
+  // Font styles
+  const fontStyles = {
+    gameTitle: { fontFamily: 'Press Start 2P, monospace' },
+    vtText: { fontFamily: 'VT323, monospace' },
+    normalText: { fontFamily: 'Arial, sans-serif' }
+  }
+
   useEffect(() => {
     tapSoundRef.current = new Audio('/tap.mp3')
     tapSoundRef.current.load()
@@ -229,25 +236,46 @@ How is it ? 🔥
 
   if (!isReady) {
     return (
-      <div style={{ padding: 20, textAlign: 'center', backgroundColor: '#800080', minHeight: '100vh', color: '#ffe241' }}>
-        <h1>🎮 Loading Farcaster Tapping Game...</h1>
+      <div style={{ 
+        padding: 20, 
+        textAlign: 'center', 
+        backgroundColor: '#800080', 
+        minHeight: '100vh', 
+        color: '#ffe241',
+        ...fontStyles.vtText
+      }}>
+        <h1 style={{ fontSize: '1.5rem' }}>🎮 Loading Farcaster Tapping Game...</h1>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#800080', minHeight: '100vh', color: '#ffe241' }}>
-      <h1 style={{ fontSize: '2.5rem', margin: '20px 0', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
+    <div style={{ 
+      padding: 20, 
+      textAlign: 'center', 
+      backgroundColor: '#800080', 
+      minHeight: '100vh', 
+      color: '#ffe241',
+      ...fontStyles.vtText
+    }}>
+      <h1 style={{ 
+        ...fontStyles.gameTitle,
+        fontSize: '2rem', 
+        margin: '20px 0', 
+        textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+        lineHeight: '1.2'
+      }}>
         🎮 Farcaster Tap Game
       </h1>
 
       {!isGameRunning && !gameOver && (
         <div style={{ marginBottom: '30px' }}>
-          <h2 style={{ marginBottom: '20px' }}>Ready to test your tapping speed?</h2>
+          <h2 style={{ marginBottom: '20px', fontSize: '1.5rem' }}>Ready to test your tapping speed?</h2>
           <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px' }}>
             <button
               onClick={startGame}
               style={{
+                ...fontStyles.vtText,
                 fontSize: '1.5rem',
                 padding: '15px 30px',
                 backgroundColor: '#ffe241',
@@ -273,6 +301,7 @@ How is it ? 🔥
             <button
               onClick={() => setShowLeaderboard(!showLeaderboard)}
               style={{
+                ...fontStyles.vtText,
                 fontSize: '1.2rem',
                 padding: '12px 24px',
                 backgroundColor: '#ffcc00',
@@ -300,6 +329,7 @@ How is it ? 🔥
             <button
               onClick={handleAddToFarcaster}
               style={{
+                ...fontStyles.vtText,
                 fontSize: '1.1rem',
                 padding: '10px 20px',
                 backgroundColor: '#66ccff',
@@ -337,7 +367,8 @@ How is it ? 🔥
           <button
             onClick={handleTap}
             style={{
-              fontSize: '3rem',
+              ...fontStyles.vtText,
+              fontSize: '2rem',
               width: '200px',
               height: '200px',
               backgroundColor: animate ? '#ff66cc' : '#ffe241',
@@ -358,7 +389,7 @@ How is it ? 🔥
 
       {gameOver && (
         <div style={{ marginBottom: '30px' }}>
-          <h2 style={{ color: '#ff66cc', marginBottom: '20px' }}>🎉 Game Over!</h2>
+          <h2 style={{ color: '#ff66cc', marginBottom: '20px', fontSize: '2rem' }}>🎉 Game Over!</h2>
           <div style={{ fontSize: '2rem', marginBottom: '15px' }}>
             Final Score: {tapCount} taps
           </div>
@@ -376,6 +407,7 @@ How is it ? 🔥
             <button
               onClick={handleReset}
               style={{
+                ...fontStyles.vtText,
                 fontSize: '1.2rem',
                 padding: '12px 24px',
                 backgroundColor: '#66ccff',
@@ -391,6 +423,7 @@ How is it ? 🔥
             <button
               onClick={handleShareScore}
               style={{
+                ...fontStyles.vtText,
                 fontSize: '1.2rem',
                 padding: '12px 24px',
                 backgroundColor: '#99ff99',
@@ -406,6 +439,7 @@ How is it ? 🔥
             <button
               onClick={() => setShowLeaderboard(!showLeaderboard)}
               style={{
+                ...fontStyles.vtText,
                 fontSize: '1.2rem',
                 padding: '12px 24px',
                 backgroundColor: '#ffcc00',
@@ -431,9 +465,9 @@ How is it ? 🔥
           maxWidth: '500px',
           margin: '30px auto'
         }}>
-          <h3 style={{ marginBottom: '20px', color: '#ffcc00' }}>🏆 Top 10 Leaderboard</h3>
+          <h3 style={{ marginBottom: '20px', color: '#ffcc00', fontSize: '1.5rem' }}>🏆 Top 10 Leaderboard</h3>
           {leaderboard.length === 0 ? (
-            <p>No scores yet. Be the first to play!</p>
+            <p style={{ fontSize: '1.2rem' }}>No scores yet. Be the first to play!</p>
           ) : (
             <div>
               {leaderboard.map((entry, index) => (
@@ -447,7 +481,7 @@ How is it ? 🔥
                     marginBottom: '8px',
                     backgroundColor: index < 3 ? 'rgba(255, 204, 0, 0.2)' : 'rgba(255, 255, 255, 0.1)',
                     borderRadius: '8px',
-                    fontSize: '1rem'
+                    fontSize: '1.2rem'
                   }}
                 >
                   <div>
@@ -458,7 +492,7 @@ How is it ? 🔥
                   </div>
                   <div>
                     <span style={{ fontWeight: 'bold' }}>{entry.taps}</span>
-                    <span style={{ marginLeft: '10px', fontSize: '0.9rem', opacity: 0.8 }}>
+                    <span style={{ marginLeft: '10px', fontSize: '1rem', opacity: 0.8 }}>
                       ({entry.tps.toFixed(1)} TPS)
                     </span>
                   </div>
@@ -469,10 +503,15 @@ How is it ? 🔥
         </div>
       )}
 
-      <div style={{ marginTop: '40px', fontSize: '0.9rem', opacity: 0.8 }}>
+      <div style={{ marginTop: '40px', fontSize: '1.1rem', opacity: 0.8 }}>
         <p>Tap as fast as you can in 15 seconds!</p>
         <p>TPS = Taps Per Second</p>
-        <p style={{ marginTop: '10px', color: '#99ff99' }}>
+        <p style={{ 
+          ...fontStyles.normalText,
+          marginTop: '10px', 
+          color: '#99ff99',
+          fontSize: '0.9rem'
+        }}>
           Built by{' '}
           <a 
             href="https://farcaster.xyz/vinu07" 
