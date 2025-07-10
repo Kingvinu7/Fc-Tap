@@ -71,10 +71,7 @@ export default function MiniApp() {
 
         if (!storedName) {
           storedName = prompt(
-            `Fc Taps Game says:
-
-Enter your Farcaster username for some benefits.
-(Tip: enter it correctly, you won't be able to change it later!)`
+            'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits.\n(Tip: enter it correctly, you won\'t be able to change it later!)'
           )?.trim() || ''
 
           if (storedName) {
@@ -94,6 +91,7 @@ Enter your Farcaster username for some benefits.
 
           const isPersonalBest = !previous?.length || rawTapCountRef.current > previous[0].taps
 
+          // Only update leaderboard if it's a personal best
           if (isPersonalBest) {
             await supabase
               .from('leaderboard')
@@ -395,11 +393,21 @@ Can you beat my score? 🔥
       <div style={{ marginTop: '40px', fontSize: '0.9rem', opacity: 0.8 }}>
         <p>Tap as fast as you can in 15 seconds!</p>
         <p>TPS = Taps Per Second</p>
-        {username && (
-          <p style={{ marginTop: '10px', color: '#99ff99' }}>
-            Playing as: @{username}
-          </p>
-        )}
+        <p style={{ marginTop: '10px', color: '#99ff99' }}>
+          Built by{' '}
+          <a 
+            href="https://farcaster.xyz/vinu07" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ 
+              color: '#99ff99', 
+              textDecoration: 'underline',
+              fontWeight: 'bold'
+            }}
+          >
+            @vinu07
+          </a>
+        </p>
       </div>
     </div>
   )
