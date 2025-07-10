@@ -56,10 +56,22 @@ export default function MiniApp() {
           localStorage.setItem('add-app-prompted', 'true')
         }
       }
-    }, 2000)
+    }, 3000)
 
     return () => clearTimeout(timer)
   }, [])
+
+  const handleAddToFarcaster = async () => {
+    try {
+      await sdk.actions.addMiniApp()
+      localStorage.setItem('add-app-prompted', 'true')
+    } catch (err) {
+      const error = err as { name?: string }
+      if (error.name === 'RejectedByUser') {
+        localStorage.setItem('add-app-prompted', 'true')
+      }
+    }
+  }
 
   useEffect(() => {
     if (gameOver) {
@@ -270,6 +282,33 @@ Can you beat my score? 🔥
               }}
             >
               🏆 Leaderboard
+            </button>
+          </div>
+          <div style={{ marginTop: '20px' }}>
+            <button
+              onClick={handleAddToFarcaster}
+              style={{
+                fontSize: '1.1rem',
+                padding: '10px 20px',
+                backgroundColor: '#66ccff',
+                color: '#800080',
+                border: 'none',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                boxShadow: '0 4px 15px rgba(102, 204, 255, 0.3)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)'
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 204, 255, 0.5)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 204, 255, 0.3)'
+              }}
+            >
+              📱 Add to Farcaster
             </button>
           </div>
         </div>
