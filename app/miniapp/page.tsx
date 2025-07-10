@@ -207,18 +207,16 @@ export default function MiniApp() {
   }
 
   const handleShareScore = async () => {
-    try {
-      const rank = getRank()
-      const zws = '\u200B'.repeat(Math.floor(Math.random() * 3) + 1)
-
-const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
-👉 Try beating me:   
-https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game${zws}`
-
-await sdk.actions.composeCast({ text })
-    } catch (error) {
-      console.error('Error sharing score:', error)
-    }
+  try {
+    const rank = getRank()
+    const uniqueUrl = `https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game?ref=${Date.now()}`
+    const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
+👉 Try beating me:
+${uniqueUrl}`
+    await sdk.actions.composeCast({ text })
+  } catch (error) {
+    console.error('Error sharing score:', error)
+  }
   }
 
   useEffect(() => {
