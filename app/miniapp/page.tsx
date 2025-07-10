@@ -63,7 +63,7 @@ export default function MiniApp() {
 
     return () => clearTimeout(timer)
   }, [])
-
+  
   useEffect(() => {
     if (gameOver) {
       const finalTps = rawTapCountRef.current / 15
