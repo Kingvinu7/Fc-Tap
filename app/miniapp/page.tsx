@@ -490,39 +490,43 @@ export default function MiniApp() {
               <p style={{ fontSize: '1.2rem' }}>No scores yet. Be the first to play!</p>
             ) : (
               <div>
-                {leaderboard.map((entry, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '10px',
-                      marginBottom: '8px',
-                      backgroundColor: index < 3 ? 'rgba(255, 204, 0, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                      borderRadius: '8px',
-                      fontSize: '1.2rem'
-                    }}
-                  >
-                    <div>
-                      <span style={{ fontWeight: 'bold' }}>
-                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
-                      </span>
-                      <span style={{ marginLeft: '10px' }}>{entry.username}</span>
-                    </div>
-                    <div>
-                      <span style={{ fontWeight: 'bold' }}>{entry.taps}</span>
-                      <span style={{ marginLeft: '10px', fontSize: '1rem', opacity: 0.8 }}>
-                        ({entry.tps.toFixed(1)} TPS)
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                {leaderboard.map((entry, index) => {
+  const rankColor =
+    index === 0 ? '#FFD700' : // Gold
+    index === 1 ? '#C0C0C0' : // Silver
+    index === 2 ? '#CD7F32' : // Bronze
+    '#ffe241';               // Default
 
+  return (
+    <div
+      key={index}
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '10px',
+        marginBottom: '8px',
+        backgroundColor: index < 3 ? 'rgba(255, 204, 0, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+        borderRadius: '8px',
+        fontSize: '1.2rem',
+        color: rankColor
+      }}
+    >
+      <div>
+        <span style={{ fontWeight: 'bold' }}>
+          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
+        </span>
+        <span style={{ marginLeft: '10px' }}>{entry.username}</span>
+      </div>
+      <div>
+        <span style={{ fontWeight: 'bold' }}>{entry.taps}</span>
+        <span style={{ marginLeft: '10px', fontSize: '1rem', opacity: 0.8 }}>
+          ({entry.tps.toFixed(1)} TPS)
+        </span>
+      </div>
+    </div>
+  )
+})}
         <div style={{ marginTop: '40px', fontSize: '1.1rem', opacity: 0.8 }}>
           <p>Tap as fast as you can in 15 seconds!</p>
           <p>TPS = Taps Per Second</p>
