@@ -103,7 +103,6 @@ export default function MiniApp() {
 
           const isPersonalBest = !previous?.length || rawTapCountRef.current > previous[0].taps
 
-          // Only update leaderboard if it's a personal best
           if (isPersonalBest) {
             await supabase
               .from('leaderboard')
@@ -122,7 +121,6 @@ export default function MiniApp() {
             })
           }
 
-          // Always refresh leaderboard to show current data
           fetchLeaderboard()
         }
       }, 100)
@@ -225,256 +223,27 @@ How is it ? 🔥
 
   return (
     <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#800080', minHeight: '100vh', color: '#ffe241' }}>
-      <h1 style={{ fontSize: '2.5rem', margin: '20px 0', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
-        🎮 Farcaster Tap Game
-      </h1>
-
-      {!isGameRunning && !gameOver && (
-        <div style={{ marginBottom: '30px' }}>
-          <h2 style={{ marginBottom: '20px' }}>Ready to test your tapping speed?</h2>
-          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px' }}>
-            <button
-              onClick={startGame}
-              style={{
-                fontSize: '1.5rem',
-                padding: '15px 30px',
-                backgroundColor: '#ffe241',
-                color: '#800080',
-                border: 'none',
-                borderRadius: '50px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                boxShadow: '0 4px 15px rgba(255, 226, 65, 0.3)',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'scale(1.05)'
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 226, 65, 0.5)'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'scale(1)'
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 226, 65, 0.3)'
-              }}
-            >
-              🚀 Start Game
-            </button>
-            <button
-              onClick={() => setShowLeaderboard(!showLeaderboard)}
-              style={{
-                fontSize: '1.2rem',
-                padding: '12px 24px',
-                backgroundColor: '#ffcc00',
-                color: '#800080',
-                border: 'none',
-                borderRadius: '25px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                boxShadow: '0 4px 15px rgba(255, 204, 0, 0.3)',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'scale(1.05)'
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 204, 0, 0.5)'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'scale(1)'
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 204, 0, 0.3)'
-              }}
-            >
-              🏆 Leaderboard
-            </button>
-          </div>
-          <div style={{ marginTop: '20px' }}>
-            <button
-              onClick={handleAddToFarcaster}
-              style={{
-                fontSize: '1.1rem',
-                padding: '10px 20px',
-                backgroundColor: '#66ccff',
-                color: '#800080',
-                border: 'none',
-                borderRadius: '20px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                boxShadow: '0 4px 15px rgba(102, 204, 255, 0.3)',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'scale(1.05)'
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 204, 255, 0.5)'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'scale(1)'
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 204, 255, 0.3)'
-              }}
-            >
-              📱 Add to Farcaster
-            </button>
-          </div>
-        </div>
-      )}
-
-      {isGameRunning && (
-        <div style={{ marginBottom: '30px' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '20px', fontWeight: 'bold' }}>
-            ⏱️ {timeLeft}s
-          </div>
-          <div style={{ fontSize: '2rem', marginBottom: '20px' }}>
-            Taps: {tapCount}
-          </div>
-          <button
-            onClick={handleTap}
-            style={{
-              fontSize: '3rem',
-              width: '200px',
-              height: '200px',
-              backgroundColor: animate ? '#ff66cc' : '#ffe241',
-              color: '#800080',
-              border: 'none',
-              borderRadius: '50%',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 8px 30px rgba(255, 226, 65, 0.5)',
-              transform: animate ? 'scale(0.95)' : 'scale(1)',
-              transition: 'all 0.1s ease'
-            }}
-          >
-            TAP  ME😼
-          </button>
-        </div>
-      )}
-
-      {gameOver && (
-        <div style={{ marginBottom: '30px' }}>
-          <h2 style={{ color: '#ff66cc', marginBottom: '20px' }}>🎉 Game Over!</h2>
-          <div style={{ fontSize: '2rem', marginBottom: '15px' }}>
-            Final Score: {tapCount} taps
-          </div>
-          <div style={{ fontSize: '1.5rem', marginBottom: '15px' }}>
-            Speed: {tps.toFixed(1)} TPS
-          </div>
-          <div style={{ fontSize: '1.5rem', marginBottom: '20px' }}>
-            Rank: {rank.name}
-          </div>
-          <div style={{ fontSize: '1.2rem', marginBottom: '20px', fontStyle: 'italic' }}>
-            {rank.message}
-          </div>
-          
-          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button
-              onClick={handleReset}
-              style={{
-                fontSize: '1.2rem',
-                padding: '12px 24px',
-                backgroundColor: '#66ccff',
-                color: '#800080',
-                border: 'none',
-                borderRadius: '25px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🔄 Play Again
-            </button>
-            <button
-              onClick={handleShareScore}
-              style={{
-                fontSize: '1.2rem',
-                padding: '12px 24px',
-                backgroundColor: '#99ff99',
-                color: '#800080',
-                border: 'none',
-                borderRadius: '25px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🚀 Share Score
-            </button>
-            <button
-              onClick={() => setShowLeaderboard(!showLeaderboard)}
-              style={{
-                fontSize: '1.2rem',
-                padding: '12px 24px',
-                backgroundColor: '#ffcc00',
-                color: '#800080',
-                border: 'none',
-                borderRadius: '25px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🏆 Leaderboard
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showLeaderboard && (
-        <div style={{ 
-          marginTop: '30px', 
-          backgroundColor: 'rgba(255, 226, 65, 0.1)', 
-          padding: '20px', 
-          borderRadius: '15px',
-          maxWidth: '500px',
-          margin: '30px auto'
-        }}>
-          <h3 style={{ marginBottom: '20px', color: '#ffcc00' }}>🏆 Top 10 Leaderboard</h3>
-          {leaderboard.length === 0 ? (
-            <p>No scores yet. Be the first to play!</p>
-          ) : (
-            <div>
-              {leaderboard.map((entry, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '10px',
-                    marginBottom: '8px',
-                    backgroundColor: index < 3 ? 'rgba(255, 204, 0, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: '8px',
-                    fontSize: '1rem'
-                  }}
-                >
-                  <div>
-                    <span style={{ fontWeight: 'bold' }}>
-                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
-                    </span>
-                    <span style={{ marginLeft: '10px' }}>{entry.username}</span>
-                  </div>
-                  <div>
-                    <span style={{ fontWeight: 'bold' }}>{entry.taps}</span>
-                    <span style={{ marginLeft: '10px', fontSize: '0.9rem', opacity: 0.8 }}>
-                      ({entry.tps.toFixed(1)} TPS)
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      {/* ... your game JSX ... */}
 
       <div className="footer-text" style={{ marginTop: '40px', fontSize: '0.9rem', opacity: 0.8 }}>
-  <p>Tap as fast as you can in 15 seconds!</p>
-  <p>TPS = Taps Per Second</p>
-  <p style={{ marginTop: '10px', color: '#99ff99' }}>
-    Built by{' '}
-    <a 
-      href="https://farcaster.xyz/vinu07" 
-      target="_blank" 
-      rel="noopener noreferrer"
-      style={{ 
-        color: '#99ff99', 
-        textDecoration: 'underline',
-        fontWeight: 'bold'
-      }}
-    >
-      @vinu07
-     </a>
-    </p>
-   </div>
+        <p>Tap as fast as you can in 15 seconds!</p>
+        <p>TPS = Taps Per Second</p>
+        <p style={{ marginTop: '10px', color: '#99ff99' }}>
+          Built by{' '}
+          <a 
+            href="https://farcaster.xyz/vinu07" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ 
+              color: '#99ff99', 
+              textDecoration: 'underline',
+              fontWeight: 'bold'
+            }}
+          >
+            @vinu07
+          </a>
+        </p>
+      </div>
+    </div>
   )
 }
