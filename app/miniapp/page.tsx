@@ -108,9 +108,10 @@ export default function MiniApp() {
               origin: { y: 0.6 },
               colors: ['#ffcc00', '#ff66cc', '#66ccff', '#99ff99']
             })
-
-            fetchLeaderboard()
           }
+
+          // Always refresh leaderboard to show current data
+          fetchLeaderboard()
         }
       }, 100)
     }
@@ -219,31 +220,58 @@ Can you beat my score? 🔥
       {!isGameRunning && !gameOver && (
         <div style={{ marginBottom: '30px' }}>
           <h2 style={{ marginBottom: '20px' }}>Ready to test your tapping speed?</h2>
-          <button
-            onClick={startGame}
-            style={{
-              fontSize: '1.5rem',
-              padding: '15px 30px',
-              backgroundColor: '#ffe241',
-              color: '#800080',
-              border: 'none',
-              borderRadius: '50px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 15px rgba(255, 226, 65, 0.3)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)'
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 226, 65, 0.5)'
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'scale(1)'
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 226, 65, 0.3)'
-            }}
-          >
-            🚀 Start Game
-          </button>
+          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px' }}>
+            <button
+              onClick={startGame}
+              style={{
+                fontSize: '1.5rem',
+                padding: '15px 30px',
+                backgroundColor: '#ffe241',
+                color: '#800080',
+                border: 'none',
+                borderRadius: '50px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                boxShadow: '0 4px 15px rgba(255, 226, 65, 0.3)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)'
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 226, 65, 0.5)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 226, 65, 0.3)'
+              }}
+            >
+              🚀 Start Game
+            </button>
+            <button
+              onClick={() => setShowLeaderboard(!showLeaderboard)}
+              style={{
+                fontSize: '1.2rem',
+                padding: '12px 24px',
+                backgroundColor: '#ffcc00',
+                color: '#800080',
+                border: 'none',
+                borderRadius: '25px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                boxShadow: '0 4px 15px rgba(255, 204, 0, 0.3)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)'
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 204, 0, 0.5)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 204, 0, 0.3)'
+              }}
+            >
+              🏆 Leaderboard
+            </button>
+          </div>
         </div>
       )}
 
