@@ -339,7 +339,7 @@ Can you beat my score? 🔥
               transition: 'all 0.1s ease'
             }}
           >
-            👆 TAP
+             TAP ME 😼
           </button>
         </div>
       )}
