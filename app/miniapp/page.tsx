@@ -71,7 +71,10 @@ export default function MiniApp() {
 
         if (!storedName) {
           storedName = prompt(
-            'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits.\n(Tip: enter it correctly, you won't be able to change it later!)'
+            `Fc Taps Game says:
+
+Enter your Farcaster username for some benefits.
+(Tip: enter it correctly, you won't be able to change it later!)`
           )?.trim() || ''
 
           if (storedName) {
@@ -400,4 +403,4 @@ Can you beat my score? 🔥
       </div>
     </div>
   )
-          }
+}
