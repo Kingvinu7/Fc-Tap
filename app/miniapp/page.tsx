@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import confetti from 'canvas-confetti'
 import { sdk } from '@farcaster/miniapp-sdk'
 import { supabase } from '@/lib/supabaseClient'
+import '@fontsource/press-start-2p'
 
 export default function MiniApp() {
   const [isReady, setIsReady] = useState(false)
@@ -32,12 +33,10 @@ export default function MiniApp() {
   useEffect(() => {
     sdk.actions.ready().then(() => {
       setIsReady(true)
-
       if (window?.location?.hash === '#reset-user') {
         localStorage.removeItem('fc-username')
         alert('✅ Username reset! You will be asked to enter a new one after your next game.')
       }
-
       fetchLeaderboard()
     })
   }, [])
@@ -57,7 +56,6 @@ export default function MiniApp() {
         }
       }
     }, 3000)
-
     return () => clearTimeout(timer)
   }, [])
 
@@ -80,12 +78,10 @@ export default function MiniApp() {
 
       setTimeout(async () => {
         let storedName = localStorage.getItem('fc-username')
-
         if (!storedName) {
           storedName = prompt(
-            'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits.\n(Tip: enter it correctly, you won\'t be able to change it later!)'
+            'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits.\n(Tip: enter it correctly, you won’t be able to change it later!)'
           )?.trim() || ''
-
           if (storedName) {
             localStorage.setItem('fc-username', storedName)
           }
@@ -104,11 +100,7 @@ export default function MiniApp() {
           const isPersonalBest = !previous?.length || rawTapCountRef.current > previous[0].taps
 
           if (isPersonalBest) {
-            await supabase
-              .from('leaderboard')
-              .delete()
-              .eq('username', storedName)
-
+            await supabase.from('leaderboard').delete().eq('username', storedName)
             await supabase.from('leaderboard').insert([
               { username: storedName, taps: rawTapCountRef.current, tps: finalTps }
             ])
@@ -133,7 +125,6 @@ export default function MiniApp() {
       .select('username, taps, tps')
       .order('taps', { ascending: false })
       .limit(10)
-
     if (!error && data) setLeaderboard(data)
   }
 
@@ -161,7 +152,6 @@ export default function MiniApp() {
     rawTapCountRef.current += 1
     setTapCount(prev => prev + 1)
     setAnimate(true)
-
     const clone = tapSoundRef.current?.cloneNode() as HTMLAudioElement
     clone?.play().catch(() => {})
   }
@@ -190,7 +180,7 @@ export default function MiniApp() {
       const rank = getRank()
       const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
 ⚡️ ${tps.toFixed(1)} TPS | ${rank.name}
-How is it ? 🔥
+How is it? 🔥
 👉 Try beating me: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
       await sdk.actions.composeCast({ text })
     } catch (error) {
@@ -215,27 +205,49 @@ How is it ? 🔥
 
   if (!isReady) {
     return (
-      <div style={{ padding: 20, textAlign: 'center', backgroundColor: '#800080', minHeight: '100vh', color: '#ffe241' }}>
+      <div
+        style={{
+          fontFamily: "'Press Start 2P', system-ui",
+          padding: 20,
+          textAlign: 'center',
+          backgroundColor: '#800080',
+          minHeight: '100vh',
+          color: '#ffe241'
+        }}
+      >
         <h1>🎮 Loading Farcaster Tapping Game...</h1>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#800080', minHeight: '100vh', color: '#ffe241' }}>
-      {/* ... your game JSX ... */}
-
-      <div className="footer-text" style={{ marginTop: '40px', fontSize: '0.9rem', opacity: 0.8 }}>
+    <div
+      style={{
+        fontFamily: "'Press Start 2P', system-ui",
+        padding: 20,
+        textAlign: 'center',
+        backgroundColor: '#800080',
+        minHeight: '100vh',
+        color: '#ffe241'
+      }}
+    >
+      
+      <div className="footer-text" style={{
+        fontFamily: 'Arial, sans-serif',
+        marginTop: '40px',
+        fontSize: '0.9rem',
+        opacity: 0.8
+      }}>
         <p>Tap as fast as you can in 15 seconds!</p>
         <p>TPS = Taps Per Second</p>
         <p style={{ marginTop: '10px', color: '#99ff99' }}>
           Built by{' '}
-          <a 
-            href="https://farcaster.xyz/vinu07" 
-            target="_blank" 
+          <a
+            href="https://farcaster.xyz/vinu07"
+            target="_blank"
             rel="noopener noreferrer"
-            style={{ 
-              color: '#99ff99', 
+            style={{
+              color: '#99ff99',
               textDecoration: 'underline',
               fontWeight: 'bold'
             }}
