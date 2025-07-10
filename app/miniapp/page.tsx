@@ -33,9 +33,9 @@ export default function MiniApp() {
     sdk.actions.ready().then(() => {
       setIsReady(true)
 
-      if (window?.location?.hash === '#reset-user') {
+      if (typeof window !== 'undefined' && window?.location?.hash === '#reset-user') {
         localStorage.removeItem('fc-username')
-        alert('âœ… Username reset! You will be asked to enter a new one after your next game.')
+        alert('✅ Username reset! You will be asked to enter a new one after your next game.')
       }
 
       fetchLeaderboard()
@@ -45,15 +45,19 @@ export default function MiniApp() {
   useEffect(() => {
     const timer = setTimeout(async () => {
       try {
-        const hasBeenPrompted = localStorage.getItem('add-app-prompted')
-        if (!hasBeenPrompted) {
-          await sdk.actions.addMiniApp()
-          localStorage.setItem('add-app-prompted', 'true')
+        if (typeof window !== 'undefined') {
+          const hasBeenPrompted = localStorage.getItem('add-app-prompted')
+          if (!hasBeenPrompted) {
+            await sdk.actions.addMiniApp()
+            localStorage.setItem('add-app-prompted', 'true')
+          }
         }
       } catch (err) {
         const error = err as { name?: string }
         if (error.name === 'RejectedByUser') {
-          localStorage.setItem('add-app-prompted', 'true')
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('add-app-prompted', 'true')
+          }
         }
       }
     }, 3000)
@@ -64,11 +68,15 @@ export default function MiniApp() {
   const handleAddToFarcaster = async () => {
     try {
       await sdk.actions.addMiniApp()
-      localStorage.setItem('add-app-prompted', 'true')
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('add-app-prompted', 'true')
+      }
     } catch (err) {
       const error = err as { name?: string }
       if (error.name === 'RejectedByUser') {
-        localStorage.setItem('add-app-prompted', 'true')
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('add-app-prompted', 'true')
+        }
       }
     }
   }
@@ -79,14 +87,18 @@ export default function MiniApp() {
       setTps(finalTps)
 
       setTimeout(async () => {
-        let storedName = localStorage.getItem('fc-username')
+        let storedName = ''
+        
+        if (typeof window !== 'undefined') {
+          storedName = localStorage.getItem('fc-username') || ''
+        }
 
         if (!storedName) {
           storedName = prompt(
             'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits.\n(Tip: enter it correctly, you won\'t be able to change it later!)'
           )?.trim() || ''
 
-          if (storedName) {
+          if (storedName && typeof window !== 'undefined') {
             localStorage.setItem('fc-username', storedName)
           }
         }
@@ -180,20 +192,20 @@ export default function MiniApp() {
   }
 
   const getRank = () => {
-    if (tps < 3) return { name: 'ðŸ¢ Turtle', message: 'Slow and steady!' }
-    if (tps < 5) return { name: 'ðŸ¼ Panda', message: 'Chill but strong!' }
-    if (tps < 7) return { name: 'ðŸ‡ Rabbit', message: 'Quick on your feet!' }
-    if (tps < 9) return { name: 'ðŸ† Cheetah', message: 'Blazing fast!' }
-    return { name: 'âš¡ï¸ Flash', message: 'You tapped like lightning!' }
+    if (tps < 3) return { name: '🐢 Turtle', message: 'Slow and steady!' }
+    if (tps < 5) return { name: '🐼 Panda', message: 'Chill but strong!' }
+    if (tps < 7) return { name: '🐇 Rabbit', message: 'Quick on your feet!' }
+    if (tps < 9) return { name: '🐆 Cheetah', message: 'Blazing fast!' }
+    return { name: '⚡️ Flash', message: 'You tapped like lightning!' }
   }
 
   const handleShareScore = async () => {
     try {
       const rank = getRank()
-      const text = `ðŸŽ® Just scored ${tapCount} taps in 15 seconds!
-âš¡ï¸ ${tps.toFixed(1)} TPS | ${rank.name}
-How is it ? ðŸ”¥
-ðŸ‘‰ Try beating me: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
+      const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
+⚡️ ${tps.toFixed(1)} TPS | ${rank.name}
+How is it ? 🔥
+👉 Try beating me: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
       await sdk.actions.composeCast({ text })
     } catch (error) {
       console.error('Error sharing score:', error)
@@ -218,7 +230,7 @@ How is it ? ðŸ”¥
   if (!isReady) {
     return (
       <div style={{ padding: 20, textAlign: 'center', backgroundColor: '#800080', minHeight: '100vh', color: '#ffe241' }}>
-        <h1>ðŸŽ® Loading Farcaster Tapping Game...</h1>
+        <h1>🎮 Loading Farcaster Tapping Game...</h1>
       </div>
     )
   }
@@ -226,7 +238,7 @@ How is it ? ðŸ”¥
   return (
     <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#800080', minHeight: '100vh', color: '#ffe241' }}>
       <h1 style={{ fontSize: '2.5rem', margin: '20px 0', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
-        ðŸŽ® Farcaster Tap Game
+        🎮 Farcaster Tap Game
       </h1>
 
       {!isGameRunning && !gameOver && (
@@ -256,7 +268,7 @@ How is it ? ðŸ”¥
                 e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 226, 65, 0.3)'
               }}
             >
-              ðŸš€ Start Game
+              🚀 Start Game
             </button>
             <button
               onClick={() => setShowLeaderboard(!showLeaderboard)}
@@ -281,7 +293,7 @@ How is it ? ðŸ”¥
                 e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 204, 0, 0.3)'
               }}
             >
-              ðŸ† Leaderboard
+              🏆 Leaderboard
             </button>
           </div>
           <div style={{ marginTop: '20px' }}>
@@ -308,7 +320,7 @@ How is it ? ðŸ”¥
                 e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 204, 255, 0.3)'
               }}
             >
-              ðŸ“± Add to Farcaster
+              📱 Add to Farcaster
             </button>
           </div>
         </div>
@@ -317,7 +329,7 @@ How is it ? ðŸ”¥
       {isGameRunning && (
         <div style={{ marginBottom: '30px' }}>
           <div style={{ fontSize: '3rem', marginBottom: '20px', fontWeight: 'bold' }}>
-            â±ï¸ {timeLeft}s
+            ⏱️ {timeLeft}s
           </div>
           <div style={{ fontSize: '2rem', marginBottom: '20px' }}>
             Taps: {tapCount}
@@ -339,14 +351,14 @@ How is it ? ðŸ”¥
               transition: 'all 0.1s ease'
             }}
           >
-            TAP  MEðŸ˜¼
+            TAP ME😼
           </button>
         </div>
       )}
 
       {gameOver && (
         <div style={{ marginBottom: '30px' }}>
-          <h2 style={{ color: '#ff66cc', marginBottom: '20px' }}>ðŸŽ‰ Game Over!</h2>
+          <h2 style={{ color: '#ff66cc', marginBottom: '20px' }}>🎉 Game Over!</h2>
           <div style={{ fontSize: '2rem', marginBottom: '15px' }}>
             Final Score: {tapCount} taps
           </div>
@@ -374,7 +386,7 @@ How is it ? ðŸ”¥
                 fontWeight: 'bold'
               }}
             >
-              ðŸ”„ Play Again
+              🔄 Play Again
             </button>
             <button
               onClick={handleShareScore}
@@ -389,7 +401,7 @@ How is it ? ðŸ”¥
                 fontWeight: 'bold'
               }}
             >
-              ðŸš€ Share Score
+              🚀 Share Score
             </button>
             <button
               onClick={() => setShowLeaderboard(!showLeaderboard)}
@@ -404,7 +416,7 @@ How is it ? ðŸ”¥
                 fontWeight: 'bold'
               }}
             >
-              ðŸ† Leaderboard
+              🏆 Leaderboard
             </button>
           </div>
         </div>
@@ -419,7 +431,7 @@ How is it ? ðŸ”¥
           maxWidth: '500px',
           margin: '30px auto'
         }}>
-          <h3 style={{ marginBottom: '20px', color: '#ffcc00' }}>ðŸ† Top 10 Leaderboard</h3>
+          <h3 style={{ marginBottom: '20px', color: '#ffcc00' }}>🏆 Top 10 Leaderboard</h3>
           {leaderboard.length === 0 ? (
             <p>No scores yet. Be the first to play!</p>
           ) : (
@@ -440,7 +452,7 @@ How is it ? ðŸ”¥
                 >
                   <div>
                     <span style={{ fontWeight: 'bold' }}>
-                      {index === 0 ? 'ðŸ¥‡' : index === 1 ? 'ðŸ¥ˆ' : index === 2 ? 'ðŸ¥‰' : `${index + 1}.`}
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
                     </span>
                     <span style={{ marginLeft: '10px' }}>{entry.username}</span>
                   </div>
