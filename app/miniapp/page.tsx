@@ -210,8 +210,8 @@ export default function MiniApp() {
     try {
       const rank = getRank()
       const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
-👉 Try beating me:  
-https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
+👉 Try beating me:   
+https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game\u200B
       await sdk.actions.composeCast({ text })
     } catch (error) {
       console.error('Error sharing score:', error)
