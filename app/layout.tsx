@@ -1,6 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
+import './globals.css'
 
 export async function generateMetadata(): Promise<Metadata> {
   const host = headers().get('host') || 'localhost:3000'
@@ -33,7 +34,6 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-// ✅ MAKE THIS ASYNC
 export default async function RootLayout({
   children,
 }: {
@@ -41,7 +41,15 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="pixel-font">
+        {children}
+      </body>
     </html>
   )
 }
