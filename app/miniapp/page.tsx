@@ -124,12 +124,14 @@ export default function MiniApp() {
     if (buttonsDisabled) return;
 
     try {
-      const { fid } = await sdk.actions.signIn();
-      if (fid) {
-        setFarcasterId(fid.toString());
-        alert(`Successfully signed in with Farcaster ID: ${fid}`);
+      // Calling signIn() to prompt user to sign in
+      await sdk.actions.signIn();
+      // After signIn, the fid should be available on sdk.channel
+      if (sdk.channel.fid) {
+        setFarcasterId(sdk.channel.fid.toString());
+        alert(`Successfully signed in with Farcaster ID: ${sdk.channel.fid}`);
       } else {
-        alert('Farcaster sign-in was not successful or no FID was returned.');
+        alert('Farcaster sign-in was not successful or FID is not available.');
       }
     } catch (error) {
       console.error('Error signing in with Farcaster:', error);
@@ -411,7 +413,7 @@ export default function MiniApp() {
     )
   }
 
-  return (
+return (
     <div
       style={{
         backgroundImage: "url('/retropxbg.png')",
@@ -604,7 +606,7 @@ export default function MiniApp() {
         {isGameRunning && (
           <div style={{ marginBottom: '30px' }}>
             <div style={{ fontSize: '3rem', marginBottom: '20px', fontWeight: 'bold' }}>
-            ⏱️ {timeLeft}s
+              ⏱️ {timeLeft}s
             </div>
             <div style={{ fontSize: '2rem', marginBottom: '20px' }}>
               Taps: {tapCount}
