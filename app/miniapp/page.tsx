@@ -16,6 +16,8 @@ export default function MiniApp() {
   const [username, setUsername] = useState('')
   const [leaderboard, setLeaderboard] = useState<{ username: string, taps: number, tps: number }[]>([])
   const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showResults, setShowResults] = useState(false)
+  const [buttonsDisabled, setButtonsDisabled] = useState(false)
 
   const tapSoundRef = useRef<HTMLAudioElement | null>(null)
   const resetSoundRef = useRef<HTMLAudioElement | null>(null)
@@ -190,6 +192,8 @@ export default function MiniApp() {
     setTimeLeft(15)
     setIsGameRunning(true)
     setGameOver(false)
+    setShowResults(false)
+    setButtonsDisabled(false)
 
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
@@ -199,6 +203,13 @@ export default function MiniApp() {
           }
           setIsGameRunning(false)
           setGameOver(true)
+          // Show results after a brief delay and disable buttons temporarily
+          setTimeout(() => {
+            setShowResults(true)
+            setButtonsDisabled(true)
+            // Re-enable buttons after 2 seconds to prevent accidental clicks
+            setTimeout(() => setButtonsDisabled(false), 2000)
+          }, 500)
         }
         return prev - 1
       })
@@ -208,9 +219,18 @@ export default function MiniApp() {
   const handleTap = () => {
     if (!isGameRunning || timeLeft <= 0) return
     
-    // Immediate count update
+    // Slow down tapping in the last 2 seconds to prevent accidental clicks
+    if (timeLeft <= 2) {
+      const now = Date.now()
+      const lastTap = tapSoundRef.current?.getAttribute('data-last-tap')
+      if (lastTap && now - parseInt(lastTap) < 150) {
+        return // Prevent taps faster than 150ms in last 2 seconds
+      }
+      tapSoundRef.current?.setAttribute('data-last-tap', now.toString())
+    }
+    
     rawTapCountRef.current += 1
-    setTapCount(rawTapCountRef.current)
+    setTapCount(prev => prev + 1)
     setAnimate(true)
 
     // Use audio pool for overlapping sounds
@@ -225,11 +245,13 @@ export default function MiniApp() {
   }
 
   const handleReset = () => {
+    if (buttonsDisabled) return
     rawTapCountRef.current = 0
     setTapCount(0)
     setTps(0)
     setIsGameRunning(false)
     setGameOver(false)
+    setShowResults(false)
     setTimeLeft(15)
     if (timerRef.current) {
       clearInterval(timerRef.current)
@@ -426,7 +448,6 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
             </div>
             <button
               onClick={handleTap}
-              onTouchStart={handleTap}
               style={{
                 ...fontStyles.vtText,
                 fontSize: '2rem',
@@ -440,9 +461,7 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
                 fontWeight: 'bold',
                 boxShadow: '0 8px 30px rgba(255, 226, 65, 0.5)',
                 transform: animate ? 'scale(0.95)' : 'scale(1)',
-                transition: 'all 0.1s ease',
-                userSelect: 'none',
-                touchAction: 'manipulation'
+                transition: 'all 0.1s ease'
               }}
             >
               TAP ME😼
@@ -453,69 +472,98 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
         {gameOver && (
           <div style={{ marginBottom: '30px' }}>
             <h2 style={{ color: '#ff66cc', marginBottom: '20px', fontSize: '2rem' }}>🎉 Game Over!</h2>
+            
+            {/* Always show basic results immediately */}
             <div style={{ fontSize: '2rem', marginBottom: '15px' }}>
               Final Score: {tapCount} taps
             </div>
-            <div style={{ fontSize: '1.5rem', marginBottom: '15px' }}>
-              Speed: {tps.toFixed(1)} TPS
-            </div>
-            <div style={{ fontSize: '1.5rem', marginBottom: '20px' }}>
-              Rank: {rank.name}
-            </div>
-            <div style={{ fontSize: '1.2rem', marginBottom: '20px', fontStyle: 'italic' }}>
-              {rank.message}
-            </div>
             
+            {/* Show detailed results after delay */}
+            {showResults && (
+              <>
+                <div style={{ fontSize: '1.5rem', marginBottom: '15px' }}>
+                  Speed: {tps.toFixed(1)} TPS
+                </div>
+                <div style={{ fontSize: '1.5rem', marginBottom: '20px' }}>
+                  Rank: {rank.name}
+                </div>
+                <div style={{ fontSize: '1.2rem', marginBottom: '20px', fontStyle: 'italic' }}>
+                  {rank.message}
+                </div>
+              </>
+            )}
+            
+            {/* Buttons with disabled state */}
             <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={handleReset}
+                disabled={buttonsDisabled}
                 style={{
                   ...fontStyles.vtText,
                   fontSize: '1.2rem',
                   padding: '12px 24px',
-                  backgroundColor: '#66ccff',
-                  color: '#800080',
+                  backgroundColor: buttonsDisabled ? '#666' : '#66ccff',
+                  color: buttonsDisabled ? '#ccc' : '#800080',
                   border: 'none',
                   borderRadius: '25px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold'
+                  cursor: buttonsDisabled ? 'not-allowed' : 'pointer',
+                  fontWeight: 'bold',
+                  opacity: buttonsDisabled ? 0.5 : 1,
+                  transition: 'all 0.3s ease'
                 }}
               >
-                🔄 Play Again
+                🔄 {buttonsDisabled ? 'Wait...' : 'Play Again'}
               </button>
               <button
                 onClick={handleShareScore}
+                disabled={buttonsDisabled}
                 style={{
                   ...fontStyles.vtText,
                   fontSize: '1.2rem',
                   padding: '12px 24px',
-                  backgroundColor: '#99ff99',
-                  color: '#800080',
+                  backgroundColor: buttonsDisabled ? '#666' : '#99ff99',
+                  color: buttonsDisabled ? '#ccc' : '#800080',
                   border: 'none',
                   borderRadius: '25px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold'
+                  cursor: buttonsDisabled ? 'not-allowed' : 'pointer',
+                  fontWeight: 'bold',
+                  opacity: buttonsDisabled ? 0.5 : 1,
+                  transition: 'all 0.3s ease'
                 }}
               >
                 🚀 Share Score
               </button>
               <button
                 onClick={() => setShowLeaderboard(!showLeaderboard)}
+                disabled={buttonsDisabled}
                 style={{
                   ...fontStyles.vtText,
                   fontSize: '1.2rem',
                   padding: '12px 24px',
-                  backgroundColor: '#ffcc00',
-                  color: '#800080',
+                  backgroundColor: buttonsDisabled ? '#666' : '#ffcc00',
+                  color: buttonsDisabled ? '#ccc' : '#800080',
                   border: 'none',
                   borderRadius: '25px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold'
+                  cursor: buttonsDisabled ? 'not-allowed' : 'pointer',
+                  fontWeight: 'bold',
+                  opacity: buttonsDisabled ? 0.5 : 1,
+                  transition: 'all 0.3s ease'
                 }}
               >
                 🏆 Leaderboard
               </button>
             </div>
+            
+            {buttonsDisabled && (
+              <p style={{ 
+                marginTop: '15px', 
+                fontSize: '1rem', 
+                color: '#ffcc00',
+                fontStyle: 'italic' 
+              }}>
+                Please wait to see your full results...
+              </p>
+            )}
           </div>
         )}
 
