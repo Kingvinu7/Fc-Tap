@@ -20,6 +20,10 @@ export default function MiniApp() {
   // New states for button protection and staggered results
   const [buttonsDisabled, setButtonsDisabled] = useState(false)
   const [showDetailedResults, setShowDetailedResults] = useState(false)
+  
+  // Autoclicker detection states
+  const [autoclickerWarning, setAutoclickerWarning] = useState(false)
+  const [suspiciousActivity, setSuspiciousActivity] = useState(false)
 
   const tapSoundRef = useRef<HTMLAudioElement | null>(null)
   const resetSoundRef = useRef<HTMLAudioElement | null>(null)
@@ -27,6 +31,11 @@ export default function MiniApp() {
   const rawTapCountRef = useRef(0)
   const audioPoolRef = useRef<HTMLAudioElement[]>([])
   const audioIndexRef = useRef(0)
+  
+  // Autoclicker detection refs
+  const tapTimestamps = useRef<number[]>([])
+  const rapidTapCount = useRef(0)
+  const lastTapTime = useRef(0)
 
   // Font styles
   const fontStyles = {
@@ -219,6 +228,13 @@ export default function MiniApp() {
     setIsGameRunning(true)
     setGameOver(false)
     setShowDetailedResults(false)
+    setAutoclickerWarning(false)
+    setSuspiciousActivity(false)
+    
+    // Reset autoclicker detection
+    tapTimestamps.current = []
+    rapidTapCount.current = 0
+    lastTapTime.current = 0
 
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
@@ -236,6 +252,53 @@ export default function MiniApp() {
 
   const handleTap = () => {
     if (!isGameRunning || timeLeft <= 0) return
+    
+    const now = Date.now()
+    
+    // Autoclicker detection logic
+    if (lastTapTime.current > 0) {
+      const timeDiff = now - lastTapTime.current
+      
+      // Add timestamp to array for analysis
+      tapTimestamps.current.push(now)
+      
+      // Keep only last 20 taps for analysis
+      if (tapTimestamps.current.length > 20) {
+        tapTimestamps.current.shift()
+      }
+      
+      // Check for rapid tapping (25ms or faster)
+      if (timeDiff <= 25) {
+        rapidTapCount.current++
+      }
+      
+      // Analyze tap patterns every 10 taps
+      if (tapTimestamps.current.length >= 10) {
+        const recentTaps = tapTimestamps.current.slice(-10)
+        const intervals = []
+        
+        for (let i = 1; i < recentTaps.length; i++) {
+          intervals.push(recentTaps[i] - recentTaps[i-1])
+        }
+        
+        // Check for suspiciously consistent timing (variance < 5ms)
+        const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length
+        const variance = intervals.reduce((sum, interval) => sum + Math.pow(interval - avgInterval, 2), 0) / intervals.length
+        
+        // Trigger warning if:
+        // 1. Average interval is very low (< 30ms)
+        // 2. Timing is too consistent (variance < 5)
+        // 3. Too many rapid taps (> 5 in recent sequence)
+        if ((avgInterval < 30 && variance < 5) || rapidTapCount.current > 5) {
+          if (!autoclickerWarning) {
+            setAutoclickerWarning(true)
+            setSuspiciousActivity(true)
+          }
+        }
+      }
+    }
+    
+    lastTapTime.current = now
     
     // Immediate count update
     rawTapCountRef.current += 1
@@ -262,7 +325,15 @@ export default function MiniApp() {
     setIsGameRunning(false)
     setGameOver(false)
     setShowDetailedResults(false)
+    setAutoclickerWarning(false)
+    setSuspiciousActivity(false)
     setTimeLeft(15)
+    
+    // Reset autoclicker detection
+    tapTimestamps.current = []
+    rapidTapCount.current = 0
+    lastTapTime.current = 0
+    
     if (timerRef.current) {
       clearInterval(timerRef.current)
     }
@@ -270,6 +341,22 @@ export default function MiniApp() {
   }
 
   const getRank = () => {
+    // Add autoclicker warning for high TPS
+    if (tps >= 30 && tps < 35) {
+      return { 
+        name: '⚠️ Speed Demon', 
+        message: 'Impressive speed! Are you using assistance?',
+        warning: true
+      }
+    }
+    if (tps >= 35) {
+      return { 
+        name: '🤖 Cyborg', 
+        message: 'Superhuman speed detected! This looks like autoclicker territory.',
+        warning: true
+      }
+    }
+    
     if (tps < 3) return { name: '🐢 Turtle', message: 'Slow and steady!' }
     if (tps < 5) return { name: '🐼 Panda', message: 'Chill but strong!' }
     if (tps < 7) return { name: '🐇 Rabbit', message: 'Quick on your feet!' }
@@ -488,6 +575,22 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
             <div style={{ fontSize: '2rem', marginBottom: '20px' }}>
               Taps: {tapCount}
             </div>
+            
+            {/* Autoclicker warning during gameplay */}
+            {autoclickerWarning && (
+              <div style={{ 
+                backgroundColor: 'rgba(255, 165, 0, 0.2)', 
+                border: '2px solid #FFA500',
+                borderRadius: '10px',
+                padding: '10px',
+                marginBottom: '20px',
+                color: '#FFA500',
+                fontSize: '1.2rem'
+              }}>
+                ⚠️ Autoclicker detected! Playing for fun is great, but this affects leaderboard fairness.
+              </div>
+            )}
+            
             <button
               onClick={handleTap}
               onTouchStart={handleTap}
@@ -530,9 +633,36 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
                 <div style={{ fontSize: '1.5rem', marginBottom: '20px' }}>
                   Rank: {rank.name}
                 </div>
-                <div style={{ fontSize: '1.2rem', marginBottom: '20px', fontStyle: 'italic' }}>
+                <div style={{ 
+                  fontSize: '1.2rem', 
+                  marginBottom: '20px', 
+                  fontStyle: 'italic',
+                  color: rank.warning ? '#FFA500' : '#ffe241'
+                }}>
                   {rank.message}
                 </div>
+                
+                {/* Final autoclicker warning */}
+                {(suspiciousActivity || tps >= 20) && (
+                  <div style={{ 
+                    backgroundColor: 'rgba(255, 165, 0, 0.2)', 
+                    border: '2px solid #FFA500',
+                    borderRadius: '10px',
+                    padding: '15px',
+                    marginBottom: '20px',
+                    color: '#FFA500',
+                    fontSize: '1.1rem'
+                  }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                      🤖 Autoclicker Activity Detected
+                    </div>
+                    <div style={{ fontSize: '1rem' }}>
+                      {tps >= 35 ? 
+                        'Your speed suggests automated clicking. While impressive, this affects fair play on the leaderboard.' :
+                        'Your tapping pattern shows signs of assistance. Remember, human records are more meaningful!'}
+                    </div>
+                  </div>
+                )}
               </>
             )}
 
