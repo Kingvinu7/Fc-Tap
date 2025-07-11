@@ -16,8 +16,10 @@ export default function MiniApp() {
   const [username, setUsername] = useState('')
   const [leaderboard, setLeaderboard] = useState<{ username: string, taps: number, tps: number }[]>([])
   const [showLeaderboard, setShowLeaderboard] = useState(false)
-  const [showResults, setShowResults] = useState(false)
+  
+  // New states for button protection and staggered results
   const [buttonsDisabled, setButtonsDisabled] = useState(false)
+  const [showDetailedResults, setShowDetailedResults] = useState(false)
 
   const tapSoundRef = useRef<HTMLAudioElement | null>(null)
   const resetSoundRef = useRef<HTMLAudioElement | null>(null)
@@ -91,6 +93,8 @@ export default function MiniApp() {
   }, [])
 
   const handleAddToFarcaster = async () => {
+    if (buttonsDisabled) return
+    
     try {
       await sdk.actions.addMiniApp()
       if (typeof window !== 'undefined') {
@@ -126,6 +130,20 @@ export default function MiniApp() {
     if (gameOver) {
       const finalTps = rawTapCountRef.current / 15
       setTps(finalTps)
+      
+      // Enable button protection immediately
+      setButtonsDisabled(true)
+      setShowDetailedResults(false)
+
+      // Show detailed results after 0.5 seconds
+      const detailedResultsTimer = setTimeout(() => {
+        setShowDetailedResults(true)
+      }, 500)
+
+      // Re-enable buttons after 2 seconds
+      const buttonEnableTimer = setTimeout(() => {
+        setButtonsDisabled(false)
+      }, 2000)
 
       setTimeout(async () => {
         let storedName = ''
@@ -183,17 +201,24 @@ export default function MiniApp() {
           }
         }
       }, 100)
+
+      // Clean up timers
+      return () => {
+        clearTimeout(detailedResultsTimer)
+        clearTimeout(buttonEnableTimer)
+      }
     }
   }, [gameOver])
 
   const startGame = () => {
+    if (buttonsDisabled) return
+    
     rawTapCountRef.current = 0
     setTapCount(0)
     setTimeLeft(15)
     setIsGameRunning(true)
     setGameOver(false)
-    setShowResults(false)
-    setButtonsDisabled(false)
+    setShowDetailedResults(false)
 
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
@@ -203,13 +228,6 @@ export default function MiniApp() {
           }
           setIsGameRunning(false)
           setGameOver(true)
-          // Show results after a brief delay and disable buttons temporarily
-          setTimeout(() => {
-            setShowResults(true)
-            setButtonsDisabled(true)
-            // Re-enable buttons after 2 seconds to prevent accidental clicks
-            setTimeout(() => setButtonsDisabled(false), 2000)
-          }, 500)
         }
         return prev - 1
       })
@@ -219,18 +237,9 @@ export default function MiniApp() {
   const handleTap = () => {
     if (!isGameRunning || timeLeft <= 0) return
     
-    // Slow down tapping in the last 2 seconds to prevent accidental clicks
-    if (timeLeft <= 2) {
-      const now = Date.now()
-      const lastTap = tapSoundRef.current?.getAttribute('data-last-tap')
-      if (lastTap && now - parseInt(lastTap) < 150) {
-        return // Prevent taps faster than 150ms in last 2 seconds
-      }
-      tapSoundRef.current?.setAttribute('data-last-tap', now.toString())
-    }
-    
+    // Immediate count update
     rawTapCountRef.current += 1
-    setTapCount(prev => prev + 1)
+    setTapCount(rawTapCountRef.current)
     setAnimate(true)
 
     // Use audio pool for overlapping sounds
@@ -246,12 +255,13 @@ export default function MiniApp() {
 
   const handleReset = () => {
     if (buttonsDisabled) return
+    
     rawTapCountRef.current = 0
     setTapCount(0)
     setTps(0)
     setIsGameRunning(false)
     setGameOver(false)
-    setShowResults(false)
+    setShowDetailedResults(false)
     setTimeLeft(15)
     if (timerRef.current) {
       clearInterval(timerRef.current)
@@ -268,6 +278,8 @@ export default function MiniApp() {
   }
 
   const handleShareScore = async () => {
+    if (buttonsDisabled) return
+    
     try {
       const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
 👉 Try beating me:
@@ -276,6 +288,11 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
     } catch (error) {
       console.error('Error sharing score:', error)
     }
+  }
+
+  const handleLeaderboardToggle = () => {
+    if (buttonsDisabled) return
+    setShowLeaderboard(!showLeaderboard)
   }
 
   useEffect(() => {
@@ -292,6 +309,16 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
       }
     }
   }, [])
+
+  // Button style function that handles disabled state
+  const getButtonStyle = (baseStyle: React.CSSProperties) => ({
+    ...baseStyle,
+    opacity: buttonsDisabled ? 0.5 : 1,
+    backgroundColor: buttonsDisabled ? '#888888' : baseStyle.backgroundColor,
+    cursor: buttonsDisabled ? 'not-allowed' : 'pointer',
+    transform: buttonsDisabled ? 'none' : baseStyle.transform,
+    transition: 'all 0.3s ease'
+  })
 
   const rank = getRank()
 
@@ -356,7 +383,8 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
             <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px' }}>
               <button
                 onClick={startGame}
-                style={{
+                disabled={buttonsDisabled}
+                style={getButtonStyle({
                   ...fontStyles.vtText,
                   fontSize: '1.5rem',
                   padding: '15px 30px',
@@ -368,21 +396,26 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
                   fontWeight: 'bold',
                   boxShadow: '0 4px 15px rgba(255, 226, 65, 0.3)',
                   transition: 'all 0.3s ease'
-                }}
+                })}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.05)'
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 226, 65, 0.5)'
+                  if (!buttonsDisabled) {
+                    e.currentTarget.style.transform = 'scale(1.05)'
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 226, 65, 0.5)'
+                  }
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)'
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 226, 65, 0.3)'
+                  if (!buttonsDisabled) {
+                    e.currentTarget.style.transform = 'scale(1)'
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 226, 65, 0.3)'
+                  }
                 }}
               >
-                🚀 Start Game
+                {buttonsDisabled ? 'Wait...' : '🚀 Start Game'}
               </button>
               <button
-                onClick={() => setShowLeaderboard(!showLeaderboard)}
-                style={{
+                onClick={handleLeaderboardToggle}
+                disabled={buttonsDisabled}
+                style={getButtonStyle({
                   ...fontStyles.vtText,
                   fontSize: '1.2rem',
                   padding: '12px 24px',
@@ -394,23 +427,28 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
                   fontWeight: 'bold',
                   boxShadow: '0 4px 15px rgba(255, 204, 0, 0.3)',
                   transition: 'all 0.3s ease'
-                }}
+                })}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.05)'
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 204, 0, 0.5)'
+                  if (!buttonsDisabled) {
+                    e.currentTarget.style.transform = 'scale(1.05)'
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 204, 0, 0.5)'
+                  }
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)'
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 204, 0, 0.3)'
+                  if (!buttonsDisabled) {
+                    e.currentTarget.style.transform = 'scale(1)'
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 204, 0, 0.3)'
+                  }
                 }}
               >
-                🏆 Leaderboard
+                {buttonsDisabled ? 'Wait...' : '🏆 Leaderboard'}
               </button>
             </div>
             <div style={{ marginTop: '20px' }}>
               <button
                 onClick={handleAddToFarcaster}
-                style={{
+                disabled={buttonsDisabled}
+                style={getButtonStyle({
                   ...fontStyles.vtText,
                   fontSize: '1.1rem',
                   padding: '10px 20px',
@@ -422,17 +460,21 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
                   fontWeight: 'bold',
                   boxShadow: '0 4px 15px rgba(102, 204, 255, 0.3)',
                   transition: 'all 0.3s ease'
-                }}
+                })}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.05)'
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 204, 255, 0.5)'
+                  if (!buttonsDisabled) {
+                    e.currentTarget.style.transform = 'scale(1.05)'
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 204, 255, 0.5)'
+                  }
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)'
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 204, 255, 0.3)'
+                  if (!buttonsDisabled) {
+                    e.currentTarget.style.transform = 'scale(1)'
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 204, 255, 0.3)'
+                  }
                 }}
               >
-                📱 Add to Farcaster
+                {buttonsDisabled ? 'Wait...' : '📱 Add to Farcaster'}
               </button>
             </div>
           </div>
@@ -448,6 +490,7 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
             </div>
             <button
               onClick={handleTap}
+              onTouchStart={handleTap}
               style={{
                 ...fontStyles.vtText,
                 fontSize: '2rem',
@@ -461,7 +504,9 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
                 fontWeight: 'bold',
                 boxShadow: '0 8px 30px rgba(255, 226, 65, 0.5)',
                 transform: animate ? 'scale(0.95)' : 'scale(1)',
-                transition: 'all 0.1s ease'
+                transition: 'all 0.1s ease',
+                userSelect: 'none',
+                touchAction: 'manipulation'
               }}
             >
               TAP ME😼
@@ -472,14 +517,12 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
         {gameOver && (
           <div style={{ marginBottom: '30px' }}>
             <h2 style={{ color: '#ff66cc', marginBottom: '20px', fontSize: '2rem' }}>🎉 Game Over!</h2>
-            
-            {/* Always show basic results immediately */}
             <div style={{ fontSize: '2rem', marginBottom: '15px' }}>
               Final Score: {tapCount} taps
             </div>
             
-            {/* Show detailed results after delay */}
-            {showResults && (
+            {/* Show detailed results only after delay */}
+            {showDetailedResults && (
               <>
                 <div style={{ fontSize: '1.5rem', marginBottom: '15px' }}>
                   Speed: {tps.toFixed(1)} TPS
@@ -492,78 +535,67 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
                 </div>
               </>
             )}
+
+            {/* Show waiting message if buttons are disabled */}
+            {buttonsDisabled && !showDetailedResults && (
+              <div style={{ fontSize: '1.2rem', marginBottom: '20px', color: '#ffcc00' }}>
+                Please wait to see your full results...
+              </div>
+            )}
             
-            {/* Buttons with disabled state */}
             <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={handleReset}
                 disabled={buttonsDisabled}
-                style={{
+                style={getButtonStyle({
                   ...fontStyles.vtText,
                   fontSize: '1.2rem',
                   padding: '12px 24px',
-                  backgroundColor: buttonsDisabled ? '#666' : '#66ccff',
-                  color: buttonsDisabled ? '#ccc' : '#800080',
+                  backgroundColor: '#66ccff',
+                  color: '#800080',
                   border: 'none',
                   borderRadius: '25px',
-                  cursor: buttonsDisabled ? 'not-allowed' : 'pointer',
-                  fontWeight: 'bold',
-                  opacity: buttonsDisabled ? 0.5 : 1,
-                  transition: 'all 0.3s ease'
-                }}
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                })}
               >
-                🔄 {buttonsDisabled ? 'Wait...' : 'Play Again'}
+                {buttonsDisabled ? 'Wait...' : '🔄 Play Again'}
               </button>
               <button
                 onClick={handleShareScore}
                 disabled={buttonsDisabled}
-                style={{
+                style={getButtonStyle({
                   ...fontStyles.vtText,
                   fontSize: '1.2rem',
                   padding: '12px 24px',
-                  backgroundColor: buttonsDisabled ? '#666' : '#99ff99',
-                  color: buttonsDisabled ? '#ccc' : '#800080',
+                  backgroundColor: '#99ff99',
+                  color: '#800080',
                   border: 'none',
                   borderRadius: '25px',
-                  cursor: buttonsDisabled ? 'not-allowed' : 'pointer',
-                  fontWeight: 'bold',
-                  opacity: buttonsDisabled ? 0.5 : 1,
-                  transition: 'all 0.3s ease'
-                }}
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                })}
               >
-                🚀 Share Score
+                {buttonsDisabled ? 'Wait...' : '🚀 Share Score'}
               </button>
               <button
-                onClick={() => setShowLeaderboard(!showLeaderboard)}
+                onClick={handleLeaderboardToggle}
                 disabled={buttonsDisabled}
-                style={{
+                style={getButtonStyle({
                   ...fontStyles.vtText,
                   fontSize: '1.2rem',
                   padding: '12px 24px',
-                  backgroundColor: buttonsDisabled ? '#666' : '#ffcc00',
-                  color: buttonsDisabled ? '#ccc' : '#800080',
+                  backgroundColor: '#ffcc00',
+                  color: '#800080',
                   border: 'none',
                   borderRadius: '25px',
-                  cursor: buttonsDisabled ? 'not-allowed' : 'pointer',
-                  fontWeight: 'bold',
-                  opacity: buttonsDisabled ? 0.5 : 1,
-                  transition: 'all 0.3s ease'
-                }}
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                })}
               >
-                🏆 Leaderboard
+                {buttonsDisabled ? 'Wait...' : '🏆 Leaderboard'}
               </button>
             </div>
-            
-            {buttonsDisabled && (
-              <p style={{ 
-                marginTop: '15px', 
-                fontSize: '1rem', 
-                color: '#ffcc00',
-                fontStyle: 'italic' 
-              }}>
-                Please wait to see your full results...
-              </p>
-            )}
           </div>
         )}
 
