@@ -207,8 +207,10 @@ export default function MiniApp() {
 
   const handleTap = () => {
     if (!isGameRunning || timeLeft <= 0) return
+    
+    // Immediate count update
     rawTapCountRef.current += 1
-    setTapCount(prev => prev + 1)
+    setTapCount(rawTapCountRef.current)
     setAnimate(true)
 
     // Use audio pool for overlapping sounds
@@ -424,6 +426,7 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
             </div>
             <button
               onClick={handleTap}
+              onTouchStart={handleTap}
               style={{
                 ...fontStyles.vtText,
                 fontSize: '2rem',
@@ -437,7 +440,9 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
                 fontWeight: 'bold',
                 boxShadow: '0 8px 30px rgba(255, 226, 65, 0.5)',
                 transform: animate ? 'scale(0.95)' : 'scale(1)',
-                transition: 'all 0.1s ease'
+                transition: 'all 0.1s ease',
+                userSelect: 'none',
+                touchAction: 'manipulation'
               }}
             >
               TAP ME😼
