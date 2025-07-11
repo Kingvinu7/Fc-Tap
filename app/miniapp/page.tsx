@@ -269,14 +269,14 @@ export default function MiniApp() {
         const currentTps = 1000 / avgInterval
         
         // Very lenient thresholds - only warn at extreme speeds
-        const consistentFastTaps = tapTimestampsRef.current.filter(t => t < 20).length >= 4 // 4 out of 6 taps under 20ms
-        const extremelyHighTps = currentTps > 45 // Increased from 35-40 to 45
+        const consistentFastTaps = tapTimestampsRef.current.filter(t => t < 20).length >= 8 // 8 out of 14 taps under 20ms
+        const extremelyHighTps = currentTps > 41 // Increased from 35-40 to 45
         
         if ((consistentFastTaps || extremelyHighTps) && !autoclickerWarning) {
           setAutoclickerWarning(true)
           setShowAutoclickerMessage(true)
           
-          // Hide message after 4 seconds
+          // Hide message after 2 seconds
           setTimeout(() => {
             setShowAutoclickerMessage(false)
           }, 4000)
