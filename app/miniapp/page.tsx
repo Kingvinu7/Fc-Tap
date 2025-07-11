@@ -268,7 +268,7 @@ export default function MiniApp() {
       }
       
       // Check for rapid tapping (25ms or faster)
-      if (timeDiff <= 25) {
+      if (timeDiff <= 20) {
         rapidTapCount.current++
       }
       
@@ -289,7 +289,7 @@ export default function MiniApp() {
         // 1. Average interval is very low (< 30ms)
         // 2. Timing is too consistent (variance < 5)
         // 3. Too many rapid taps (> 5 in recent sequence)
-        if ((avgInterval < 30 && variance < 5) || rapidTapCount.current > 5) {
+        if ((avgInterval < 20 && variance < 20) || rapidTapCount.current > 5) {
           if (!autoclickerWarning) {
             setAutoclickerWarning(true)
             setSuspiciousActivity(true)
@@ -643,7 +643,7 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
                 </div>
                 
                 {/* Final autoclicker warning */}
-                {(suspiciousActivity || tps >= 20) && (
+                {(suspiciousActivity || tps >= 30) && (
                   <div style={{ 
                     backgroundColor: 'rgba(255, 165, 0, 0.2)', 
                     border: '2px solid #FFA500',
@@ -657,7 +657,7 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
                       🤖 Autoclicker Activity Detected
                     </div>
                     <div style={{ fontSize: '1rem' }}>
-                      {tps >= 35 ? 
+                      {tps >= 36 ? 
                         'Your speed suggests automated clicking. While impressive, this affects fair play on the leaderboard.' :
                         'Your tapping pattern shows signs of assistance. Remember, human records are more meaningful!'}
                     </div>
