@@ -25,8 +25,14 @@ export default function MiniApp() {
   const [autoclickerWarning, setAutoclickerWarning] = useState(false)
   const [showAutoclickerMessage, setShowAutoclickerMessage] = useState(false)
 
+  // Music states
+  const [isMusicEnabled, setIsMusicEnabled] = useState(true)
+  const [isGameOverMusicPlaying, setIsGameOverMusicPlaying] = useState(false)
+
   const tapSoundRef = useRef<HTMLAudioElement | null>(null)
   const resetSoundRef = useRef<HTMLAudioElement | null>(null)
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null)
+  const gameOverMusicRef = useRef<HTMLAudioElement | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const rawTapCountRef = useRef(0)
   const audioPoolRef = useRef<HTMLAudioElement[]>([])
@@ -58,274 +64,47 @@ export default function MiniApp() {
       resetSoundRef.current = new Audio('/reset.mp3')
       resetSoundRef.current.preload = 'auto'
       resetSoundRef.current.volume = 0.5
+
+      // Background music
+      bgMusicRef.current = new Audio('/bg-music.mp3')
+      bgMusicRef.current.preload = 'auto'
+      bgMusicRef.current.volume = 0.3
+      bgMusicRef.current.loop = true
+
+      // Game over music
+      gameOverMusicRef.current = new Audio('/game-over.mp3')
+      gameOverMusicRef.current.preload = 'auto'
+      gameOverMusicRef.current.volume = 0.5
+      gameOverMusicRef.current.loop = false
+
+      // Load music preference from localStorage
+      const savedMusicPref = localStorage.getItem('fc-music-enabled')
+      if (savedMusicPref !== null) {
+        setIsMusicEnabled(savedMusicPref === 'true')
+      }
     }
   }, [])
 
+  // Music control effect
   useEffect(() => {
-    sdk.actions.ready().then(() => {
-      setIsReady(true)
+    if (bgMusicRef.current && isMusicEnabled && !isGameOverMusicPlaying) {
+      bgMusicRef.current.play().catch(() => {})
+    } else if (bgMusicRef.current) {
+      bgMusicRef.current.pause()
+    }
+  }, [isMusicEnabled, isGameOverMusicPlaying])
 
-      if (typeof window !== 'undefined' && window?.location?.hash === '#reset-user') {
-        const storedUsername = localStorage.getItem('fc-username')
-        if (storedUsername) {
-          localStorage.removeItem('fc-username')
-          alert('✅ Username reset! You will be asked to enter a new one after your next game.')
-        }
-      }
-
-      fetchLeaderboard()
-    })
-  }, [])
-
+  // Save music preference to localStorage
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      try {
-        if (typeof window !== 'undefined') {
-          const hasBeenPrompted = localStorage.getItem('add-app-prompted')
-          if (!hasBeenPrompted) {
-            await sdk.actions.addMiniApp()
-            localStorage.setItem('add-app-prompted', 'true')
-          }
-        }
-      } catch (err) {
-        const error = err as { name?: string }
-        if (error.name === 'RejectedByUser') {
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('add-app-prompted', 'true')
-          }
-        }
-      }
-    }, 3000)
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  const handleAddToFarcaster = async () => {
-    if (buttonsDisabled) return
-    
-    try {
-      await sdk.actions.addMiniApp()
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('add-app-prompted', 'true')
-      }
-    } catch (err) {
-      const error = err as { name?: string }
-      if (error.name === 'RejectedByUser') {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('add-app-prompted', 'true')
-        }
-      }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('fc-music-enabled', isMusicEnabled.toString())
     }
-  }
+  }, [isMusicEnabled])
 
-  const fetchLeaderboard = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('leaderboard')
-        .select('username, taps, tps')
-        .order('taps', { ascending: false })
-        .limit(10)
-
-      if (!error && data) {
-        setLeaderboard(data)
-      }
-    } catch (error) {
-      console.error('Error fetching leaderboard:', error)
-    }
-  }
-
-  useEffect(() => {
-    if (gameOver) {
-      const finalTps = rawTapCountRef.current / 15
-      setTps(finalTps)
-      
-      // Enable button protection immediately
-      setButtonsDisabled(true)
-      setShowDetailedResults(false)
-
-      // Show detailed results after 0.5 seconds
-      const detailedResultsTimer = setTimeout(() => {
-        setShowDetailedResults(true)
-      }, 500)
-
-      // Re-enable buttons after 2 seconds
-      const buttonEnableTimer = setTimeout(() => {
-        setButtonsDisabled(false)
-      }, 2000)
-
-      setTimeout(async () => {
-        let storedName = ''
-        
-        if (typeof window !== 'undefined') {
-          storedName = localStorage.getItem('fc-username') || ''
-        }
-
-        if (!storedName) {
-          storedName = prompt(
-            'Fc Taps Game says:\n\nEnter your Farcaster username for some benefits.\n(Tip: enter it correctly, you won\'t be able to change it later!)'
-          )?.trim() || ''
-
-          if (storedName && typeof window !== 'undefined') {
-            localStorage.setItem('fc-username', storedName)
-          }
-        }
-
-        if (storedName) {
-          setUsername(storedName)
-
-          try {
-            const { data: previous } = await supabase
-              .from('leaderboard')
-              .select('taps')
-              .eq('username', storedName)
-              .order('taps', { ascending: false })
-              .limit(1)
-
-            const isPersonalBest = !previous?.length || rawTapCountRef.current > previous[0].taps
-
-            // Only update leaderboard if it's a personal best
-            if (isPersonalBest) {
-              await supabase
-                .from('leaderboard')
-                .delete()
-                .eq('username', storedName)
-
-              await supabase.from('leaderboard').insert([
-                { username: storedName, taps: rawTapCountRef.current, tps: finalTps }
-              ])
-
-              confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#ffcc00', '#ff66cc', '#66ccff', '#99ff99']
-              })
-            }
-
-            // Always refresh leaderboard to show current data
-            fetchLeaderboard()
-          } catch (error) {
-            console.error('Error updating leaderboard:', error)
-          }
-        }
-      }, 100)
-
-      // Clean up timers
-      return () => {
-        clearTimeout(detailedResultsTimer)
-        clearTimeout(buttonEnableTimer)
-      }
-    }
-  }, [gameOver])
-
-  const startGame = () => {
-    if (buttonsDisabled) return
-    
-    rawTapCountRef.current = 0
-    setTapCount(0)
-    setTimeLeft(15)
-    setIsGameRunning(true)
-    setGameOver(false)
-    setShowDetailedResults(false)
-    setAutoclickerWarning(false)
-    setShowAutoclickerMessage(false)
-    
-    // Reset autoclicker detection
-    tapTimestampsRef.current = []
-    lastTapTimeRef.current = 0
-
-    timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          if (timerRef.current) {
-            clearInterval(timerRef.current)
-          }
-          setIsGameRunning(false)
-          setGameOver(true)
-        }
-        return prev - 1
-      })
-    }, 1000)
-  }
-
-  const handleTap = () => {
-    if (!isGameRunning || timeLeft <= 0) return
-    
-    const now = Date.now()
-    
-    // Autoclicker detection - more lenient thresholds
-    if (lastTapTimeRef.current > 0) {
-      const timeDiff = now - lastTapTimeRef.current
-      tapTimestampsRef.current.push(timeDiff)
-      
-      // Keep only last 8 taps for analysis (reduced from typical 10-15)
-      if (tapTimestampsRef.current.length > 8) {
-        tapTimestampsRef.current.shift()
-      }
-      
-      // Check for suspicious patterns with more lenient thresholds
-      if (tapTimestampsRef.current.length >= 6) {
-        const avgInterval = tapTimestampsRef.current.reduce((a, b) => a + b) / tapTimestampsRef.current.length
-        const currentTps = 1000 / avgInterval
-        
-        // Very lenient thresholds - only warn at extreme speeds
-        const consistentFastTaps = tapTimestampsRef.current.filter(t => t < 20).length >= 8 // 8 out of 14 taps under 20ms
-        const extremelyHighTps = currentTps > 41 // Increased from 35-40 to 45
-        
-        if ((consistentFastTaps || extremelyHighTps) && !autoclickerWarning) {
-          setAutoclickerWarning(true)
-          setShowAutoclickerMessage(true)
-          
-          // Hide message after 2 seconds
-          setTimeout(() => {
-            setShowAutoclickerMessage(false)
-          }, 4000)
-        }
-      }
-    }
-    
-    lastTapTimeRef.current = now
-    
-    // Continue with normal tap logic - don't block the tap
-    rawTapCountRef.current += 1
-    setTapCount(rawTapCountRef.current)
-    setAnimate(true)
-
-    // Use audio pool for overlapping sounds
-    if (audioPoolRef.current.length > 0) {
-      const audio = audioPoolRef.current[audioIndexRef.current]
-      audio.currentTime = 0
-      audio.play().catch(() => {})
-      
-      // Cycle through audio pool
-      audioIndexRef.current = (audioIndexRef.current + 1) % audioPoolRef.current.length
-    }
-  }
-
-  const handleReset = () => {
-    if (buttonsDisabled) return
-    
-    rawTapCountRef.current = 0
-    setTapCount(0)
-    setTps(0)
-    setIsGameRunning(false)
-    setGameOver(false)
-    setShowDetailedResults(false)
-    setAutoclickerWarning(false)
-    setShowAutoclickerMessage(false)
-    setTimeLeft(15)
-    
-    // Reset autoclicker detection
-    tapTimestampsRef.current = []
-    lastTapTimeRef.current = 0
-    
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-    }
-    resetSoundRef.current?.play().catch(() => {})
-  }
-
-  const getRank = () => {
+  const toggleMusic = () => {
+    setIsMusicEnabled(!isMusicEnabled)
+  } 
+const getRank = () => {
     if (tps < 3) return { name: '🐢 Turtle', message: 'Slow and steady!' }
     if (tps < 5) return { name: '🐼 Panda', message: 'Chill but strong!' }
     if (tps < 7) return { name: '🐇 Rabbit', message: 'Quick on your feet!' }
@@ -351,6 +130,18 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
     setShowLeaderboard(!showLeaderboard)
   }
 
+  const toggleBackgroundMusic = () => {
+    if (bgMusicRef.current) {
+      if (isMusicPlaying) {
+        bgMusicRef.current.pause()
+        setIsMusicPlaying(false)
+      } else {
+        bgMusicRef.current.play().catch(() => {})
+        setIsMusicPlaying(true)
+      }
+    }
+  }
+
   useEffect(() => {
     if (animate) {
       const timer = setTimeout(() => setAnimate(false), 300)
@@ -362,6 +153,13 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current)
+      }
+      // Clean up audio on unmount
+      if (bgMusicRef.current) {
+        bgMusicRef.current.pause()
+      }
+      if (gameOverMusicRef.current) {
+        gameOverMusicRef.current.pause()
       }
     }
   }, [])
@@ -413,6 +211,43 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
           zIndex: 0
         }}
       />
+
+      {/* Music Toggle Button */}
+      <button
+        onClick={toggleBackgroundMusic}
+        style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          zIndex: 10,
+          ...fontStyles.vtText,
+          fontSize: '1.5rem',
+          padding: '10px 15px',
+          backgroundColor: 'rgba(255, 226, 65, 0.9)',
+          color: '#800080',
+          border: 'none',
+          borderRadius: '50%',
+          cursor: 'pointer',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 15px rgba(255, 226, 65, 0.3)',
+          transition: 'all 0.3s ease',
+          width: '60px',
+          height: '60px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.transform = 'scale(1.1)'
+          e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 226, 65, 0.5)'
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.transform = 'scale(1)'
+          e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 226, 65, 0.3)'
+        }}
+      >
+        {isMusicPlaying ? '🔊' : '🔇'}
+      </button>
 
       <style jsx>{`
         @keyframes pulse {
