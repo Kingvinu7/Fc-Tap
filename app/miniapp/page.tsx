@@ -24,7 +24,6 @@ export default function MiniApp() {
   // Autoclicker detection states
   const [autoclickerWarning, setAutoclickerWarning] = useState(false)
   const [showAutoclickerMessage, setShowAutoclickerMessage] = useState(false)
-  const [farcasterId, setFarcasterId] = useState<string | null>(null); // New state for Farcaster ID
 
   const tapSoundRef = useRef<HTMLAudioElement | null>(null)
   const resetSoundRef = useRef<HTMLAudioElement | null>(null)
@@ -118,27 +117,6 @@ export default function MiniApp() {
       }
     }
   }
-
-  // New function to handle Farcaster sign-in
-  const handleSignInWithFarcaster = async () => {
-    if (buttonsDisabled) return;
-
-    try {
-      // Calling signIn() to prompt user to sign in
-      await sdk.actions.signIn();
-      // After signIn, the fid should be available on sdk.channel
-      if (sdk.channel.fid) {
-        setFarcasterId(sdk.channel.fid.toString());
-        alert(`Successfully signed in with Farcaster ID: ${sdk.channel.fid}`);
-      } else {
-        alert('Farcaster sign-in was not successful or FID is not available.');
-      }
-    } catch (error) {
-      console.error('Error signing in with Farcaster:', error);
-      alert('Failed to sign in with Farcaster. Please try again.');
-    }
-  };
-
 
   const fetchLeaderboard = async () => {
     try {
@@ -340,7 +318,7 @@ export default function MiniApp() {
     // Reset autoclicker detection
     tapTimestampsRef.current = []
     lastTapTimeRef.current = 0
-  
+    
     if (timerRef.current) {
       clearInterval(timerRef.current)
     }
@@ -359,7 +337,9 @@ export default function MiniApp() {
     if (buttonsDisabled) return
     
     try {
-      const text = `🎮 Just scored ${tapCount} taps in 15 seconds! 👉 Try beating me: https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
+      const text = `🎮 Just scored ${tapCount} taps in 15 seconds!
+👉 Try beating me:
+https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
       await sdk.actions.composeCast({ text })
     } catch (error) {
       console.error('Error sharing score:', error)
@@ -412,8 +392,8 @@ export default function MiniApp() {
       </div>
     )
   }
-
-return (
+  
+  return (
     <div
       style={{
         backgroundImage: "url('/retropxbg.png')",
@@ -451,7 +431,7 @@ return (
           color: '#ffe241'
         }}
       >
-        <h1 style={{
+        <h1 style={{ 
           ...fontStyles.gameTitle,
           fontSize: '2rem', 
           margin: '20px 0', 
@@ -560,45 +540,6 @@ return (
               >
                 {buttonsDisabled ? 'Wait...' : '📱 Add to Farcaster'}
               </button>
-            </div>
-            {/* New Sign-in Button */}
-            <div style={{ marginTop: '20px' }}>
-              <button
-                onClick={handleSignInWithFarcaster}
-                disabled={buttonsDisabled}
-                style={getButtonStyle({
-                  ...fontStyles.vtText,
-                  fontSize: '1.1rem',
-                  padding: '10px 20px',
-                  backgroundColor: '#99ff99', // A different color for distinction
-                  color: '#800080',
-                  border: 'none',
-                  borderRadius: '20px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  boxShadow: '0 4px 15px rgba(153, 255, 153, 0.3)',
-                  transition: 'all 0.3s ease'
-                })}
-                onMouseOver={(e) => {
-                  if (!buttonsDisabled) {
-                    e.currentTarget.style.transform = 'scale(1.05)'
-                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(153, 255, 153, 0.5)'
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!buttonsDisabled) {
-                    e.currentTarget.style.transform = 'scale(1)'
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(153, 255, 153, 0.3)'
-                  }
-                }}
-              >
-                {buttonsDisabled ? 'Wait...' : '🔑 Sign In with Farcaster'}
-              </button>
-              {farcasterId && (
-                <p style={{ marginTop: '10px', fontSize: '1rem', color: '#99ff99' }}>
-                  Signed in as Farcaster ID: {farcasterId}
-                </p>
-              )}
             </div>
           </div>
         )}
@@ -744,7 +685,7 @@ return (
         {showLeaderboard && (
           <div style={{ 
             marginTop: '30px', 
-            backgroundColor: 'rgba(255, 226, 65, 0.1)',
+            backgroundColor: 'rgba(255, 226, 65, 0.1)', 
             padding: '20px', 
             borderRadius: '15px',
             maxWidth: '500px',
@@ -760,7 +701,7 @@ return (
                     index === 0 ? '#FFD700' : // Gold
                     index === 1 ? '#C0C0C0' : // Silver
                     index === 2 ? '#CD7F32' : // Bronze
-                    '#ffe241'; // Default
+                    '#ffe241';               // Default
 
                   return (
                     <div
@@ -809,7 +750,7 @@ return (
                   target="_blank" 
                   rel="noopener noreferrer"
                   style={{ 
-                    color: '#99ff99',
+                    color: '#99ff99', 
                     textDecoration: 'underline',
                     fontWeight: 'bold'
                   }}
