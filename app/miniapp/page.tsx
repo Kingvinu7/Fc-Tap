@@ -140,7 +140,22 @@ const tapSoundRef = useRef<HTMLAudioElement | null>(null)
         .from('leaderboard')
         .select('username, taps, tps')
         .order('taps', { ascending: false })
-        .limit(10)
+        .limit(15) 
+
+      const fadeInAudio = (audio: HTMLAudioElement, targetVolume = 0.5, duration = 2000) => {
+  audio.volume = 0 // start quiet
+  audio.play().catch(() => {}) // start playing it
+
+  const step = targetVolume / (duration / 50) // how much to increase per tick
+  const fadeInterval = setInterval(() => {
+    if (audio.volume + step >= targetVolume) {
+      audio.volume = targetVolume
+      clearInterval(fadeInterval) // stop once we're at target
+    } else {
+      audio.volume += step // raise the volume little by little
+    }
+  }, 50) // every 50ms = smooth steps
+ }
 
       if (!error && data) {
         setLeaderboard(data)
@@ -155,15 +170,24 @@ const tapSoundRef = useRef<HTMLAudioElement | null>(null)
       const finalTps = rawTapCountRef.current / 15
       setTps(finalTps)
 if (bgMusicRef.current) {
-        bgMusicRef.current.pause()
+if (bgMusicRef.current) {
+  bgMusicRef.current.pause()
+}
+
+if (gameOverMusicRef.current) {
+  gameOverMusicRef.current.currentTime = 0
+  gameOverMusicRef.current.play().catch(() => {})
+  gameOverMusicRef.current.onended = () => {
+    gameOverMusicRef.current!.currentTime = 0
+
+    setTimeout(() => {
+      if (bgMusicRef.current && !isMuted) {
+        bgMusicRef.current.currentTime = 0
+        fadeInAudio(bgMusicRef.current, 0.5, 1500) // 🔥 smooth fade back in
       }
-      if (gameOverMusicRef.current) {
-        gameOverMusicRef.current.currentTime = 0
-        gameOverMusicRef.current.play().catch(() => {})
-        gameOverMusicRef.current.onended = () => {
-          gameOverMusicRef.current!.currentTime = 0
-        }
-      }
+    }, 1500) // ⏱️ wait 1.5s after game-over ends
+  }
+}
       
       // Enable button protection immediately
       setButtonsDisabled(true)
