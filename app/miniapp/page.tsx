@@ -184,7 +184,7 @@ if (gameOverMusicRef.current) {
         bgMusicRef.current.currentTime = 0
         fadeInAudio(bgMusicRef.current, 0.5, 1500) // 🔥 smooth fade back in
       }
-    }, 1000) // ⏱️ wait 1s after game-over ends
+    }, 600) // ⏱️ wait 0.6s after game-over ends
   }
 }
       
