@@ -266,7 +266,7 @@ if (gameOverMusicRef.current) {
         clearTimeout(buttonEnableTimer)
       }
     }
-  }, [gameOver])
+  },[gameOver])
 
   const startGame = () => {
     if (buttonsDisabled) return
