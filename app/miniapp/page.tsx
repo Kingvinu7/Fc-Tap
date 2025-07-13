@@ -142,7 +142,15 @@ const tapSoundRef = useRef<HTMLAudioElement | null>(null)
         .order('taps', { ascending: false })
         .limit(15) 
 
-      const fadeInAudio = (audio: HTMLAudioElement, targetVolume = 0.5, duration = 2000) => {
+      if (!error && data) {
+        setLeaderboard(data)
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error)
+    }
+  }
+  
+const fadeInAudio = (audio: HTMLAudioElement, targetVolume = 0.5, duration = 2000) => {
   audio.volume = 0 // start quiet
   audio.play().catch(() => {}) // start playing it
 
@@ -155,16 +163,8 @@ const tapSoundRef = useRef<HTMLAudioElement | null>(null)
       audio.volume += step // raise the volume little by little
     }
   }, 50) // every 50ms = smooth steps
- }
-
-      if (!error && data) {
-        setLeaderboard(data)
-      }
-    } catch (error) {
-      console.error('Error fetching leaderboard:', error)
-    }
-  }
-
+}
+  
   useEffect(() => {
     if (gameOver) {
       const finalTps = rawTapCountRef.current / 15
