@@ -25,7 +25,12 @@ export default function MiniApp() {
   const [autoclickerWarning, setAutoclickerWarning] = useState(false)
   const [showAutoclickerMessage, setShowAutoclickerMessage] = useState(false)
 
-  const tapSoundRef = useRef<HTMLAudioElement | null>(null)
+  
+  const [isMuted, setIsMuted] = useState(false)
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null)
+  const gameOverMusicRef = useRef<HTMLAudioElement | null>(null)
+
+const tapSoundRef = useRef<HTMLAudioElement | null>(null)
   const resetSoundRef = useRef<HTMLAudioElement | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const rawTapCountRef = useRef(0)
@@ -58,6 +63,17 @@ export default function MiniApp() {
       resetSoundRef.current = new Audio('/reset.mp3')
       resetSoundRef.current.preload = 'auto'
       resetSoundRef.current.volume = 0.5
+// Background music setup
+      bgMusicRef.current = new Audio('/bg-music.mp3')
+      bgMusicRef.current.loop = true
+      bgMusicRef.current.volume = 0.5
+
+      // Game over music setup
+      gameOverMusicRef.current = new Audio('/game-over.mp3')
+      gameOverMusicRef.current.volume = 0.6
+
+      // Start background music
+      bgMusicRef.current.play().catch(() => {})
     }
   }, [])
 
@@ -138,6 +154,16 @@ export default function MiniApp() {
     if (gameOver) {
       const finalTps = rawTapCountRef.current / 15
       setTps(finalTps)
+if (bgMusicRef.current) {
+        bgMusicRef.current.pause()
+      }
+      if (gameOverMusicRef.current) {
+        gameOverMusicRef.current.currentTime = 0
+        gameOverMusicRef.current.play().catch(() => {})
+        gameOverMusicRef.current.onended = () => {
+          gameOverMusicRef.current!.currentTime = 0
+        }
+      }
       
       // Enable button protection immediately
       setButtonsDisabled(true)
@@ -218,7 +244,7 @@ export default function MiniApp() {
     }
   }, [gameOver])
 
-const startGame = () => {
+  const startGame = () => {
     if (buttonsDisabled) return
     
     rawTapCountRef.current = 0
@@ -323,9 +349,27 @@ const startGame = () => {
       clearInterval(timerRef.current)
     }
     resetSoundRef.current?.play().catch(() => {})
+if (gameOverMusicRef.current) {
+    gameOverMusicRef.current.pause()
+    gameOverMusicRef.current.currentTime = 0
   }
 
-  const getRank = () => {
+  if (bgMusicRef.current && !isMuted) {
+    bgMusicRef.current.currentTime = 0
+    bgMusicRef.current.play().catch(() => {})
+  }
+  }
+
+  
+  const toggleMute = () => {
+    const newMute = !isMuted
+    setIsMuted(newMute)
+    if (bgMusicRef.current) bgMusicRef.current.muted = newMute
+    if (gameOverMusicRef.current) gameOverMusicRef.current.muted = newMute
+  }
+
+
+const getRank = () => {
     if (tps < 3) return { name: '🐢 Turtle', message: 'Slow and steady!' }
     if (tps < 5) return { name: '🐼 Panda', message: 'Chill but strong!' }
     if (tps < 7) return { name: '🐇 Rabbit', message: 'Quick on your feet!' }
@@ -405,6 +449,28 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
         fontFamily: 'VT323, monospace'
       }}
     >
+      
+      <button
+        onClick={toggleMute}
+        style={{
+          position: 'absolute',
+          top: 10,
+          right: 10,
+          zIndex: 99,
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          border: 'none',
+          borderRadius: '12px',
+          padding: '8px 14px',
+          fontSize: '1.3rem',
+          color: '#ffe241',
+          cursor: 'pointer',
+          backdropFilter: 'blur(4px)'
+        }}
+      >
+        {isMuted ? '🔇' : '🔊'}
+      </button>
+
+
       <div
         style={{
           position: 'absolute',
@@ -561,7 +627,7 @@ https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game`
                 padding: '12px 20px',
                 borderRadius: '10px',
                 margin: '15px auto',
-                maxWidth: '400px',
+           maxWidth: '400px',
                 fontSize: '1.1rem',
                 fontWeight: 'bold',
                 border: '2px solid #ff8c00',
