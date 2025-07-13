@@ -170,7 +170,6 @@ const tapSoundRef = useRef<HTMLAudioElement | null>(null)
       const finalTps = rawTapCountRef.current / 15
       setTps(finalTps)
 if (bgMusicRef.current) {
-if (bgMusicRef.current) {
   bgMusicRef.current.pause()
 }
 
