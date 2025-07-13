@@ -9,11 +9,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: 'FC Tap Game',
-    description: 'Tap as fast as you can!',
+    description: 'Tap Harder! App built by @vinu07',
     metadataBase: new URL(baseUrl),
     openGraph: {
       title: 'FC Tap Game',
-      description: 'Tap as fast as you can!',
+      description: 'Tap Harder! App built by @vinu07',
       images: [
         {
           url: '/og.png',
@@ -23,7 +23,6 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       ],
     },
-    // Remove the conflicting frame metadata, keep only miniapp
     other: {
       'fc:miniapp': 'true',
     },
@@ -38,22 +37,24 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap" rel="stylesheet" />
-        {/* Add miniapp metadata here */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap"
+          rel="stylesheet"
+        />
         <script
           type="application/json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
-              version: "next",
+              version: 'next',
               imageUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fc-taps.vercel.app'}/og.png`,
               button: {
-                title: "Start tapping now",
+                title: 'Start tapping now',
                 action: {
-                  type: "launch_miniapp",
-                  url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fc-taps.vercel.app'}/miniapp`
-                }
-              }
-            })
+                  type: 'launch_miniapp',
+                  url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fc-taps.vercel.app'}/miniapp`,
+                },
+              },
+            }),
           }}
         />
       </head>
