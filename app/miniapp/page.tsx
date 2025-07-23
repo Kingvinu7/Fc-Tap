@@ -401,17 +401,17 @@ const getRank = () => {
   }
 
   const handleShareScore = async () => {
-    if (buttonsDisabled) return
-    
-    try {
-  const text = `🎮 Just scored ${tapCount} taps in 15 seconds!\n👉 Try beating me:`;
-  const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=${encodeURIComponent('https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game')}`;
+  if (buttonsDisabled) return
 
-  await sdk.actions.openUrl({ url: shareUrl });
-} catch (error) {
-  console.error('Error sharing score:', error);
-    }
+  try {
+    const text = `🎮 Just scored ${tapCount} taps in 15 seconds!\n👉 Try beating me:`;
+    const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=${encodeURIComponent('https://farcaster.xyz/miniapps/jcV0ojRAzBKZ/fc-tap-game')}`;
+
+    await sdk.actions.openUrl(shareUrl); // ✅ FIXED
+  } catch (error) {
+    console.error('Error sharing score:', error);
   }
+};
 
   const handleLeaderboardToggle = () => {
     if (buttonsDisabled) return
