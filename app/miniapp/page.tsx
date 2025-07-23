@@ -411,6 +411,7 @@ const getRank = () => {
 } catch (error) {
   console.error('Error sharing score:', error);
     }
+  }
 
   const handleLeaderboardToggle = () => {
     if (buttonsDisabled) return
